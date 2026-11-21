@@ -1,0 +1,603 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>數概第三章複習站</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one centered work column (max 760px); sticky header with a "today" tally chip at right, like a register stamp. */
+:root{
+  --bg:#eef2f4; --surface:#ffffff; --ink:#14232c; --muted:#5b6d78; --line:#d4dde2;
+  --accent:#0f6a73; --accent-ink:#ffffff; --accent-soft:#dcefef;
+  --ok:#1f7a3f; --ok-soft:#e1f3e7; --bad:#b3261e; --bad-soft:#fbe6e4; --warn:#9a5b00; --warn-soft:#fdf0d9;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f171b; --surface:#17232a; --ink:#e3ecef; --muted:#93a6b0; --line:#2a3a42;
+  --accent:#4fb8bf; --accent-ink:#0b1417; --accent-soft:#1a3639;
+  --ok:#5cc37f; --ok-soft:#163222; --bad:#f08a80; --bad-soft:#3a1c1a; --warn:#e8b45a; --warn-soft:#352812; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f171b; --surface:#17232a; --ink:#e3ecef; --muted:#93a6b0; --line:#2a3a42;
+  --accent:#4fb8bf; --accent-ink:#0b1417; --accent-soft:#1a3639;
+  --ok:#5cc37f; --ok-soft:#163222; --bad:#f08a80; --bad-soft:#3a1c1a; --warn:#e8b45a; --warn-soft:#352812; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:760px;margin:0 auto;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-weight:900;font-size:18px;letter-spacing:.02em;background:none;border:0;padding:0}
+.brand small{display:block;font-weight:500;font-size:12px;color:var(--muted);letter-spacing:.06em}
+.spacer{flex:1}
+.who{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.who input{width:9em;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px}
+.tally{display:flex;align-items:center;gap:10px;padding:6px 12px 6px 10px;border:2px solid var(--accent);border-radius:8px;background:var(--accent-soft);color:var(--ink)}
+.tally .lbl{font-size:12px;line-height:1.2;color:var(--muted)}
+.tally .lbl b{display:block;color:var(--ink);font-size:13px}
+.tally .num{font-family:var(--f-num);font-weight:700;font-size:26px;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1}
+.tally.bump .num{animation:bump .4s ease}
+@keyframes bump{40%{transform:scale(1.35)}}
+main{max-width:760px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:20px}
+h1,h2,h3{margin:0;text-wrap:balance}
+h2{font-size:20px}
+.sec-label{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:grid;gap:14px}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.chip{text-align:left;padding:12px 14px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);display:grid;gap:2px}
+.chip b{font-size:16px}
+.chip span{font-size:13px;color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{padding:11px 20px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);font-weight:700}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.big{font-size:18px;padding:14px 28px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.wrongcard{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.wrongcard .count{font-family:var(--f-num);font-size:40px;font-weight:700;color:var(--bad);line-height:1;font-variant-numeric:tabular-nums}
+.wrongcard .meta{flex:1;min-width:180px}
+.wrongcard .meta p{margin:0;color:var(--muted);font-size:14px}
+.wlist{display:grid;gap:8px;max-height:340px;overflow:auto;padding-right:4px}
+.witem{border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px;background:var(--bg)}
+.witem .src{font-size:12px;color:var(--muted)}
+.witem .times{font-family:var(--f-num);color:var(--bad);font-size:12px}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font-weight:700;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.linkbtn.danger{color:var(--bad)}
+/* quiz */
+.qhead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.qhead b{color:var(--ink);font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.tag.retry{background:var(--warn-soft);color:var(--warn)}
+.qtext{font-size:19px;font-weight:500;line-height:1.7}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:12px 14px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);font-size:16px}
+.opt .k{flex:none;width:28px;height:28px;border-radius:6px;display:grid;place-items:center;background:var(--bg);border:1px solid var(--line);font-family:var(--f-num);font-weight:700;font-size:14px}
+.opt:not(:disabled):hover{border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.right .k{background:var(--ok);color:var(--surface);border-color:var(--ok)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad);color:var(--surface);border-color:var(--bad)}
+.opt.dim{opacity:.55}
+.fb{border-radius:8px;padding:14px 16px;display:grid;gap:6px}
+.fb.ok{background:var(--ok-soft);border:1px solid var(--ok)}
+.fb.bad{background:var(--bad-soft);border:1px solid var(--bad)}
+.fb h3{font-size:16px}
+.fb.ok h3{color:var(--ok)} .fb.bad h3{color:var(--bad)}
+.fb p{margin:0;white-space:pre-line}
+.fb .note{font-size:13px;color:var(--muted)}
+.hint{font-size:12px;color:var(--muted)}
+/* result */
+.score{display:flex;align-items:baseline;gap:8px}
+.score .n{font-family:var(--f-num);font-weight:700;font-size:72px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.score .u{font-size:20px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg)}
+.stat .v{font-family:var(--f-num);font-weight:700;font-size:22px;font-variant-numeric:tabular-nums}
+.stat .l{font-size:13px;color:var(--muted)}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(10,20,25,.5);display:grid;place-items:center;z-index:20;padding:16px}
+.modal .box{background:var(--surface);border-radius:12px;max-width:440px;width:100%;padding:22px;display:grid;gap:14px;border:1px solid var(--line)}
+.bigday{font-family:var(--f-num);font-size:64px;font-weight:700;color:var(--accent);line-height:1;font-variant-numeric:tabular-nums}
+.log{font-size:13px;display:grid;gap:4px;max-height:200px;overflow:auto}
+.log div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding-bottom:3px}
+.log span:last-child{font-family:var(--f-num);white-space:nowrap}
+/* ---------- game feel ---------- */
+:root{--gold:#e0a21b;--hot:#e8613c}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--gold:#f2c14e;--hot:#ff8a5c}}
+:root[data-theme="dark"]{--gold:#f2c14e;--hot:#ff8a5c}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:30}
+.iconbtn{background:none;border:1.5px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;color:var(--muted);font-weight:700}
+.iconbtn[aria-pressed="false"]{text-decoration:line-through}
+.tally .lv{font-family:var(--f-num);font-weight:700;color:var(--gold)}
+.panel.enter{animation:slideIn .35s cubic-bezier(.2,.8,.3,1.2)}
+@keyframes slideIn{from{opacity:0;transform:translateY(18px) scale(.98)}}
+.panel.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(3px)}}
+.opt{transition:transform .12s,box-shadow .12s,border-color .12s}
+.opt:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 6px 16px -8px rgba(15,60,70,.45)}
+.opt:not(:disabled):active{transform:scale(.98)}
+.opt.right.boom{animation:okPop .55s cubic-bezier(.2,.8,.3,1.4);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 30%,transparent)}
+@keyframes okPop{0%{transform:scale(.96)}45%{transform:scale(1.05)}100%{transform:scale(1)}}
+.opt.wrong.boom{animation:shake .4s}
+.bar{height:12px;position:relative}
+.bar i{background:repeating-linear-gradient(-45deg,var(--ok) 0 10px,color-mix(in srgb,var(--ok) 75%,#fff) 10px 20px);background-size:28px 28px;animation:stripes 1s linear infinite;border-radius:99px}
+@keyframes stripes{to{background-position:28px 0}}
+.combo{font-family:var(--f-num);font-weight:700;color:var(--muted);padding:2px 10px;border-radius:99px;border:1.5px solid var(--line);white-space:nowrap}
+.combo.hot{color:#fff;border-color:var(--hot);background:linear-gradient(90deg,var(--hot),var(--gold));animation:glow 1.2s ease-in-out infinite}
+.combo.pump{animation:bump .4s ease}
+@keyframes glow{50%{box-shadow:0 0 14px var(--hot)}}
+.plus{position:fixed;z-index:31;pointer-events:none;font-family:var(--f-num);font-weight:700;font-size:26px;color:var(--ok);text-shadow:0 2px 0 var(--surface)}
+.pop{position:fixed;left:50%;top:32%;z-index:32;pointer-events:none;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;opacity:0;text-align:center}
+.pop b{font-size:clamp(34px,8vw,56px);font-weight:900;color:var(--accent);-webkit-text-stroke:1px var(--surface);text-shadow:0 4px 0 color-mix(in srgb,var(--accent) 30%,transparent);white-space:nowrap}
+.pop span{font-weight:700;color:var(--ink);background:var(--surface);padding:2px 12px;border-radius:99px;border:1px solid var(--line)}
+.pop.combo3 b,.pop.lvl b{color:var(--hot)}
+.pop.show{animation:popIn .95s cubic-bezier(.2,.9,.3,1.3) forwards}
+.pop.show.lvl{animation-duration:1.9s}
+@keyframes popIn{0%{opacity:0;transform:translate(-50%,-30%) scale(.4)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}30%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
+.lvcard{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.lvbadge{flex:none;width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--gold) calc(var(--p)*1%),var(--line) 0);position:relative}
+.lvbadge::before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--surface)}
+.lvbadge b{position:relative;font-family:var(--f-num);font-size:22px;line-height:1;text-align:center}
+.lvbadge b small{display:block;font-size:10px;color:var(--muted);letter-spacing:.1em}
+.lvmeta{flex:1;min-width:200px;display:grid;gap:4px}
+.lvmeta .t{font-size:20px;font-weight:900}
+.lvmeta p{margin:0;color:var(--muted);font-size:14px}
+.ladder{display:flex;gap:4px;flex-wrap:wrap}
+.ladder i{width:18px;height:6px;border-radius:3px;background:var(--line)}
+.ladder i.on{background:var(--gold)}
+.btn.primary.big{box-shadow:0 4px 0 color-mix(in srgb,var(--accent) 55%,#000);transition:transform .1s,box-shadow .1s}
+.btn.primary.big:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--accent) 55%,#000)}
+.stars{display:flex;gap:10px}
+.star{width:52px;height:52px;background:var(--line);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.star.on{background:var(--gold);animation:starIn .5s cubic-bezier(.2,.9,.3,1.6) both}
+@keyframes starIn{0%{transform:scale(0) rotate(-90deg)}100%{transform:scale(1) rotate(0)}}
+.grade{font-size:22px;font-weight:900}
+/* ---------- 歷年考題 ---------- */
+.histbtn{background:var(--warn-soft);border:1.5px solid var(--warn);color:var(--warn);border-radius:8px;padding:6px 12px;font-size:14px;font-weight:700}
+.histcard{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.histcard .meta{flex:1;min-width:200px}
+.histcard .meta p{margin:0;color:var(--muted);font-size:14px}
+.hq{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:18px 20px;display:grid;gap:12px;break-inside:avoid}
+.hq .yr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hq .yr b{font-family:var(--f-num);font-size:13px;padding:2px 10px;border-radius:99px;background:var(--accent);color:var(--accent-ink)}
+.hq .qtext{font-size:18px}
+.hq img{max-width:min(100%,420px);border:1px solid var(--line);border-radius:6px;background:#fff;justify-self:start}
+.hopts{display:grid;gap:6px}
+.hopt{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.hopt .k{flex:none;font-family:var(--f-num);font-weight:700;color:var(--muted)}
+.hopt.right{border-color:var(--ok);background:var(--ok-soft)}
+.hopt.right .k{color:var(--ok)}
+.hans{border-left:4px solid var(--ok);background:var(--ok-soft);border-radius:0 8px 8px 0;padding:10px 14px;display:grid;gap:4px}
+.hans b{color:var(--ok)}
+.hans p{margin:0;white-space:pre-line}
+.ychips{display:flex;gap:6px;flex-wrap:wrap}
+.ychips .chip{padding:6px 12px}
+.ychips .chip b{font-size:14px}
+@media print{
+  .top,.noprint,#fx,.pop{display:none!important}
+  body{background:#fff;color:#000;font-size:13px}
+  main{padding:0;max-width:none}
+  .panel,.hq{border:1px solid #999;box-shadow:none}
+  .hq .qtext{font-size:15px}
+  .hopt{padding:4px 8px}
+}
+@media (max-width:520px){.who input{width:7em}.qtext{font-size:17px}.score .n{font-size:56px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="top"><div class="top-in">
+  <button class="brand" id="homeBtn" title="回首頁">數概第三章複習站<small>計算機硬體 · 線上練習</small></button>
+  <div class="spacer"></div>
+  <button class="histbtn" id="histBtn" title="歷年統測中與第三章硬體相關的原題與答案">歷年考題</button>
+  <label class="who" for="stuName">姓名/座號 <input id="stuName" placeholder="例：12 王小明" maxlength="20"></label>
+  <button class="iconbtn" id="muteBtn" aria-pressed="true" title="音效開關">音效</button>
+  <button class="tally" id="tally" title="查看今日紀錄">
+    <span class="lbl"><b>今日答對</b><span id="tallyDate"></span> · <span class="lv" id="tallyLv">Lv.1</span></span>
+    <span class="num" id="tallyNum">0</span>
+  </button>
+</div></header>
+
+<main id="app"></main>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="pop" id="pop" aria-live="polite"></div>
+
+<div class="modal" id="dayModal" hidden><div class="box" role="dialog" aria-labelledby="dayTitle">
+  <div class="sec-label">今日成果登記</div>
+  <h2 id="dayTitle"></h2>
+  <div class="row" style="align-items:baseline;gap:8px"><span class="bigday" id="dayNum">0</span><span>題答對</span></div>
+  <div class="stats" id="dayStats"></div>
+  <div class="log" id="dayLog"></div>
+  <p class="hint" style="margin:0">紀錄只存在這台裝置的瀏覽器中，隔天會自動從 0 開始。</p>
+  <div class="row"><button class="btn primary" id="dayClose">關閉</button></div>
+</div></div>
+
+<script>
+const BANK = [{"id": "n3a", "title": "3-1～3-3", "desc": "組成單元・主機・連接埠・CPU", "qs": [{"id": "n3a-1", "n": 1, "q": "電腦五大單元中，主記憶體與硬碟都屬於哪一個單元的設備？", "o": ["記憶單元", "控制單元", "輸出單元", "算術∕邏輯單元"], "a": 0, "e": "記憶單元（MU）是電腦存放程式與資料的地方，主記憶體、硬碟都屬於記憶單元。"}, {"id": "n3a-2", "n": 2, "q": "小安用投影機把簡報投射到教室布幕上，投影機在電腦五大單元中屬於哪一種單元？", "o": ["輸入單元", "記憶單元", "控制單元", "輸出單元"], "a": 3, "e": "投影機把電腦處理後的結果呈現出來，屬於輸出單元（OU），和顯示器、印表機、喇叭同類。"}, {"id": "n3a-3", "n": 3, "q": "下列關於電腦五大單元功能的敘述，何者錯誤？", "o": ["控制單元負責指令解碼，並協調各單元間的運作", "算術∕邏輯單元負責資料的運算與邏輯判斷", "輸出單元只能把結果顯示在螢幕上，無法輸出到印表機", "輸入單元是電腦接受指令及輸入資料的管道"], "a": 2, "e": "輸出單元是電腦輸出運算結果的管道，顯示器、印表機、喇叭等都屬於輸出單元，並非只能輸出到螢幕。"}, {"id": "n3a-4", "n": 4, "q": "中央處理單元（CPU）主要由哪兩個單元所組成？", "o": ["記憶單元及輸出單元", "輸入單元及記憶單元", "算術∕邏輯單元及記憶單元", "控制單元及算術∕邏輯單元"], "a": 3, "e": "控制單元（CU）與算術∕邏輯單元（ALU）合稱中央處理單元（CPU）。"}, {"id": "n3a-5", "n": 5, "q": "氣象局用電腦計算全台數百萬筆氣溫資料的平均值，電腦中負責這類計算工作的是哪一個單元？", "o": ["ALU", "CU", "IU", "MU"], "a": 0, "e": "資料的算術運算（加、減、乘、除、平均等）由算術∕邏輯單元（ALU）負責。"}, {"id": "n3a-6", "n": 6, "q": "交響樂團的指揮負責告訴每位樂手何時演奏、如何配合，讓整首曲子順利完成。若把指揮比喻成電腦的一個單元，最恰當的是？", "o": ["控制單元", "輸出單元", "記憶單元", "算術∕邏輯單元"], "a": 0, "e": "控制單元用來控制及協調電腦各單元間的運作，就像指揮協調各樂手。"}, {"id": "n3a-7", "n": 7, "q": "電腦五大單元中，輸入單元（input unit）的功用為何？", "o": ["將運算結果送到螢幕或印表機", "接受使用者輸入的指令與資料", "進行算術運算與邏輯運算", "協調各單元間的運作"], "a": 1, "e": "輸入單元是電腦接受指令及輸入資料的管道，例如鍵盤、滑鼠、掃描器、網路攝影機。"}, {"id": "n3a-8", "n": 8, "q": "程式中判斷「成績是否大於或等於60分」這類邏輯判斷，是由電腦中的哪一個單元負責處理？", "o": ["控制單元", "輸入單元", "算術∕邏輯單元", "記憶單元"], "a": 2, "e": "算術∕邏輯單元負責資料的運算與邏輯判斷，比較大小、判斷真假都屬於邏輯判斷。"}, {"id": "n3a-9", "n": 9, "q": "電腦的五大單元，除了CU、ALU之外，還包含哪些？", "o": ["CPU、MU、OU", "IU、CPU、OU", "MU、CU、IU", "IU、OU、MU"], "a": 3, "e": "五大單元為輸入（IU）、輸出（OU）、記憶（MU）、控制（CU）、算術∕邏輯（ALU）。CPU是CU加ALU的合稱，不是另一個單元。"}, {"id": "n3a-10", "n": 10, "q": "下列連接埠與其用途的配對，何者錯誤？", "o": ["DisplayPort：連接螢幕或投影機", "mic in：連接網路交換器", "line out：連接喇叭或耳機", "RJ-45：連接集線器或交換器"], "a": 1, "e": "mic in（麥克風輸入）是接麥克風用的；連接網路交換器要用RJ-45網路埠。"}, {"id": "n3a-11", "n": 11, "q": "電腦主機背面的「I/O連接埠」，其中I/O指的是什麼？", "o": ["指令與作業（Instruction / Operation）", "輸入與輸出（Input / Output）", "介面與選項（Interface / Option）", "物聯網（Internet of Things）"], "a": 1, "e": "連接埠通常是指輸入（Input）與輸出（Output）設備的插孔與插頭，因此稱為I/O連接埠。"}, {"id": "n3a-12", "n": 12, "q": "USB連接埠支援「熱插拔（hot swap）」功能，其意義為何？", "o": ["必須先關機才能插拔週邊設備", "設備插上後必須重新開機才能使用", "只有主機溫度高於一定溫度時才可插拔", "不用關機就可以直接插上或拔除週邊設備"], "a": 3, "e": "熱插拔是指在不用關機的情況下，就可直接插上使用或拔除週邊設備。"}, {"id": "n3a-13", "n": 13, "q": "阿傑想替桌上型電腦加裝一張獨立顯示卡，應該安插在主機板上的哪一種插槽？", "o": ["記憶體插槽", "CPU插槽", "PCI-E插槽", "電源插槽"], "a": 2, "e": "PCI-E插槽可插PCI-E介面的擴充卡，例如顯示卡；記憶體插槽是插RAM用的。"}, {"id": "n3a-14", "n": 14, "q": "小芬的筆電有RJ-45、HDMI、Type-C、line in等連接埠，下列她的操作何者不正確？", "o": ["利用RJ-45連接埠連上網路", "利用HDMI連接埠將畫面傳送到投影機", "利用Type-C連接埠為手機充電", "利用line in連接埠將電腦的聲音輸出到喇叭"], "a": 3, "e": "line in（音源輸入）是接錄音筆等外部音源，把聲音「輸入」電腦；要輸出到喇叭應接line out。"}, {"id": "n3a-15", "n": 15, "q": "下列哪一種設備最適合透過USB連接埠連接到電腦？", "o": ["CPU", "DRAM記憶體", "電源供應器", "網路攝影機"], "a": 3, "e": "USB可接鍵盤、滑鼠、掃描器、數位相機、隨身碟、網路攝影機等週邊設備；CPU、DRAM是插在主機板插槽上。"}, {"id": "n3a-16", "n": 16, "q": "某連接埠可同時傳輸高品質的數位影像與聲音訊號，廣泛用於電視、遊戲機等影音設備，但一個連接埠通常只連接一台顯示設備，無法串接多台螢幕。此連接埠最可能是？", "o": ["HDMI", "RJ-45", "line out", "DisplayPort"], "a": 0, "e": "HDMI可同時傳輸影音訊號，但連接設備數為1；DisplayPort功能相似，還可串接多台螢幕。"}, {"id": "n3a-17", "n": 17, "q": "下列哪一個連接埠可以用來傳輸視訊訊號？", "o": ["RJ-45", "line in", "mic in", "DisplayPort"], "a": 3, "e": "DisplayPort可接螢幕、投影機傳輸影像；RJ-45是網路埠，line in、mic in是聲音輸入。"}, {"id": "n3a-18", "n": 18, "q": "小凱想把錄音筆錄好的聲音輸入電腦進行剪輯，錄音筆的音源線應接在哪一個連接埠？", "o": ["line out", "RJ-45", "line in", "HDMI"], "a": 2, "e": "line in（音源輸入）用來接錄音筆等外部音源裝置；line out則是接喇叭或耳機。"}, {"id": "n3a-19", "n": 19, "q": "有關USB連接埠的敘述，下列何者錯誤？", "o": ["USB 4的傳輸速度可達40Gbps", "USB 2.0的傳輸速度為480Mbps", "Type-C插頭正反都可以插", "USB連接埠不具供電功能，無法為手機充電"], "a": 3, "e": "USB具有隨插即用、熱插拔、供電等功能，可以為週邊設備充電。"}, {"id": "n3a-20", "n": 20, "q": "MIPS是衡量CPU執行速度的單位，其中「M」代表什麼？", "o": ["百萬（Millions）", "記憶體（Memory）", "機器（Machine）", "微處理器（Microprocessor）"], "a": 0, "e": "MIPS為Millions of Instructions Per Second，每秒百萬指令數。"}, {"id": "n3a-21", "n": 21, "q": "志明買了一台安裝16GB記憶體的32位元電腦，下列有關這台電腦的敘述何者正確？", "o": ["16GB指的是快取記憶體的容量", "CPU的時脈頻率為32位元", "CPU一次可處理的資料量（字組）為4 Bytes", "暫存器的容量為16GB"], "a": 2, "e": "32位元表示CPU字組大小為32 bits＝4 Bytes；16GB是主記憶體（DRAM）容量；時脈頻率的單位是Hz。"}, {"id": "n3a-22", "n": 22, "q": "某筆電搭載「AMD Ryzen 7 7840U 3.30GHz」處理器，根據此敘述，下列何者正確？", "o": ["AMD為CPU的產品型號", "CPU內部石英震盪器每秒震盪33億次", "Ryzen 7 7840U為CPU的製造廠商", "每次震盪的時脈週期約為3.3奈秒"], "a": 1, "e": "3.30GHz＝3.3×10⁹＝33億次∕秒；AMD是廠商、Ryzen 7 7840U是型號；時脈週期＝1÷(3.3×10⁹)秒，約0.3奈秒。"}, {"id": "n3a-23", "n": 23, "q": "CPU執行指令時，「擷取」與「解碼」兩個步驟合稱為？", "o": ["執行週期（execution cycle）", "機器週期（machine cycle）", "擷取週期（fetch cycle）", "時脈週期（clock cycle）"], "a": 2, "e": "擷取及解碼合稱擷取週期；執行及儲存合稱執行週期；四個步驟合起來是一個機器週期。"}, {"id": "n3a-24", "n": 24, "q": "下列有關CPU執行指令過程的敘述，何者正確？", "o": ["機器週期包含擷取、編碼、執行、儲存4個步驟", "執行及儲存合稱執行週期", "擷取及執行合稱擷取週期", "CPU通常以RPM表示每秒可執行多少指令"], "a": 1, "e": "機器週期是擷取、解碼、執行、儲存（不是編碼）；擷取＋解碼＝擷取週期；CPU執行指令數的單位是MIPS，RPM是硬碟轉速。"}, {"id": "n3a-25", "n": 25, "q": "電腦處理速度的快慢，最重要的關鍵之一在於下列哪一個元件的效能？", "o": ["CPU", "顯示器", "鍵盤", "喇叭"], "a": 0, "e": "CPU是整部電腦運作的核心，處理速度快慢的重要關鍵在於CPU的效能。"}, {"id": "n3a-26", "n": 26, "q": "下列何者不是CPU內部的元件？", "o": ["暫存器", "快取記憶體", "算術∕邏輯單元", "固態硬碟"], "a": 3, "e": "CPU由控制單元、算術∕邏輯單元組成，內部還有暫存器與快取記憶體；固態硬碟是輔助記憶體。"}, {"id": "n3a-27", "n": 27, "q": "下列CPU暫存器與其用途的配對，何者錯誤？", "o": ["程式計數器：存放下一個要執行的指令位址", "累加器：存放指令在主記憶體中的位址", "旗標暫存器：存放CPU執行指令後的各種狀態", "指令暫存器：暫存正在執行中的指令"], "a": 1, "e": "累加器（ACC）是存放運算的結果；存放指令或資料位址的是位址暫存器（AR）。"}, {"id": "n3a-28", "n": 28, "q": "某CPU標示其速率為2.5GHz，其意義最接近下列何者？", "o": ["主記憶體容量為2.5GB", "內部石英震盪器每秒震盪25億次", "網路傳輸速度為2.5Gbps", "快取記憶體容量為2.5GB"], "a": 1, "e": "GHz是十億次赫茲，2.5GHz＝2.5×10⁹＝25億次∕秒，是CPU的時脈頻率。"}, {"id": "n3a-29", "n": 29, "q": "關於個人電腦CPU的敘述，下列何者正確？", "o": ["程式計數器用來暫存正在執行中的指令", "快取記憶體的存取速度由快到慢為L3＞L2＞L1", "一個機器週期包含擷取、解碼、執行、儲存4個步驟", "單核心CPU比多核心CPU更容易支援平行處理"], "a": 2, "e": "正在執行中的指令放在指令暫存器；快取速度為L1＞L2＞L3；多核心CPU較易支援平行處理。"}, {"id": "n3a-30", "n": 30, "q": "一顆時脈頻率為5GHz的CPU，其時脈週期約為多少？", "o": ["0.2奈秒", "0.5奈秒", "2奈秒", "5奈秒"], "a": 0, "e": "時脈週期＝1÷(5×10⁹)秒＝0.2×10⁻⁹秒＝0.2奈秒。速率越高，時脈週期越短。"}, {"id": "n3a-31", "n": 31, "q": "主機板上儲存電腦開機程式，負責開機自我測試、載入作業系統或設定CMOS內容的是？", "o": ["晶片組", "BIOS", "M.2插槽", "PCI-E插槽"], "a": 1, "e": "BIOS（基本輸入∕輸出系統）儲存電腦的開機程式，負責自我測試、載入作業系統或設定CMOS內容。"}, {"id": "n3a-32", "n": 32, "q": "主機板上安裝了一顆小電池，它的主要作用是什麼？", "o": ["提供CPU運算所需的主要電力", "為USB裝置提供電力", "儲存作業系統的程式", "讓CMOS記錄的系統日期等設定，在關機後不會消失"], "a": 3, "e": "CMOS晶片記錄系統日期、硬碟型號等基本設定，主機板電池的電力讓這些資料不會因電源關閉而消失。"}, {"id": "n3a-33", "n": 33, "q": "主機板上負責SATA、PCI-E x1、USB等中低速裝置溝通與控制的元件是？", "o": ["晶片組", "CPU插槽", "記憶體插槽", "電源插槽"], "a": 0, "e": "晶片組負責主機板上中低速裝置（如SATA、PCI-E x1、USB等）的溝通與控制。"}, {"id": "n3a-34", "n": 34, "q": "主機板上的M.2插槽主要用來連接下列哪一種元件？", "o": ["顯示卡", "DRAM記憶體", "電源接頭", "固態硬碟（SSD）"], "a": 3, "e": "M.2插槽用來連接固態硬碟（SSD）。"}, {"id": "n3a-35", "n": 35, "q": "小芸想用手機直接讀取隨身碟裡的照片，但手機的USB埠平常只能充電與連接電腦，此時最適合使用下列何者？", "o": ["HDMI轉接線", "OTG轉接頭", "RJ-45網路線", "line out音源線"], "a": 1, "e": "USB OTG（On-The-Go）可讓手機的USB裝置直接讀取另一個USB裝置，接上OTG轉接頭就能讀取隨身碟。"}, {"id": "n3a-36", "n": 36, "q": "下列有關Thunderbolt 4連接埠的敘述，何者錯誤？", "o": ["使用USB Type-C連接埠，與USB4通用", "最高速率約40Gbps", "可以串接多台設備", "只能傳輸資料，無法傳輸影音訊號，也不能供電"], "a": 3, "e": "Thunderbolt可雙向同步傳輸資料、影音等訊號，可串接多台設備，並提供週邊設備電力。"}]}, {"id": "n3b", "title": "3-4", "desc": "主記憶體・輔助記憶體", "qs": [{"id": "n3b-1", "n": 1, "q": "固態硬碟與傳統硬碟相比，下列哪一項是固態硬碟的缺點？", "o": ["讀寫速度", "耐震度", "單位容量的價格", "重量"], "a": 2, "e": "固態硬碟讀寫快、耐震、重量輕、無噪音、耗電低，但價格比傳統硬碟貴。"}, {"id": "n3b-2", "n": 2, "q": "隨機存取記憶體分為DRAM與SRAM，下列哪一項是DRAM優於SRAM的特點？", "o": ["存取速度較快", "單位資料的儲存成本較低", "不需要週期性充電更新", "常用來製作快取記憶體"], "a": 1, "e": "DRAM單位價格便宜，所以用來做主記憶體；SRAM速度較快、不需充電更新、常做快取記憶體，但價格較貴。"}, {"id": "n3b-3", "n": 3, "q": "個人電腦的快取記憶體（cache memory）通常使用下列哪一種記憶體製作？", "o": ["SRAM", "DRAM", "EPROM", "硬碟"], "a": 0, "e": "SRAM存取速度較快，常被用來作為快取記憶體，以減少CPU存取主記憶體的次數。"}, {"id": "n3b-4", "n": 4, "q": "報稅時使用的自然人憑證IC卡，依課本說明，其內部常使用哪一種記憶體來讀寫資料？", "o": ["DRAM", "SRAM", "EEPROM", "暫存器"], "a": 2, "e": "EEPROM可利用電流訊號刪除或寫入資料，常用在智慧卡（如自然人憑證）的讀寫上。"}, {"id": "n3b-5", "n": 5, "q": "下列記憶或儲存裝置中，何者的存取速度最慢？", "o": ["L1快取記憶體", "主記憶體（DRAM）", "固態硬碟（SSD）", "暫存器"], "a": 2, "e": "速度由快到慢：暫存器＞快取記憶體＞主記憶體＞輔助記憶體。SSD屬於輔助記憶體，最慢。"}, {"id": "n3b-6", "n": 6, "q": "許多輕薄筆電採用固態硬碟以降低機身厚度，下列有關固態硬碟的敘述何者正確？", "o": ["以快閃記憶體作為儲存元件", "體積較大、重量較重", "耐震度比傳統硬碟低", "讀取次數有限制，但寫入次數沒有限制"], "a": 0, "e": "SSD以快閃記憶體作為儲存元件，重量輕、耐震力高；可無限次讀取，但有寫入次數的限制。"}, {"id": "n3b-7", "n": 7, "q": "下列關於DRAM與SRAM的敘述，何者正確？", "o": ["SRAM需要週期性充電更新", "DRAM的存取速度比SRAM快", "SRAM的單位價格比DRAM貴", "電腦的主記憶體大多採用SRAM"], "a": 2, "e": "DRAM需週期性充電更新、速度較慢、便宜、做主記憶體；SRAM不需充電更新、速度較快、較貴、做快取記憶體。"}, {"id": "n3b-8", "n": 8, "q": "下列何者屬於非揮發性記憶體，可利用電流訊號重複寫入資料，且被廣泛用在隨身碟、記憶卡上？", "o": ["快閃記憶體（flash memory）", "SRAM", "DRAM", "暫存器"], "a": 0, "e": "快閃記憶體斷電資料不消失，可用電流訊號刪除或寫入資料，讀寫比EEPROM快、成本較低，廣泛用於手機、隨身碟、記憶卡。"}, {"id": "n3b-9", "n": 9, "q": "現在主機板的BIOS程式多存放在哪一種記憶體中，讓資料在關機後不會消失，又可以用電壓方式更新內容？", "o": ["DRAM", "SRAM", "快取記憶體", "快閃記憶體"], "a": 3, "e": "快閃記憶體屬非揮發性記憶體，又可透過電壓重複抹除資料，可用於BIOS。RAM與快取記憶體斷電後資料都會消失。"}, {"id": "n3b-10", "n": 10, "q": "下列哪一種儲存裝置是以磁盤作為儲存元件，透過讀寫頭在一圈圈的磁軌上讀寫資料？", "o": ["隨身碟", "藍光光碟", "固態硬碟", "傳統硬碟"], "a": 3, "e": "硬式磁碟機以磁盤作為儲存元件，磁盤上有一圈圈的磁軌，透過讀寫頭讀取或寫入資料。"}, {"id": "n3b-11", "n": 11, "q": "下列敘述何者正確？", "o": ["DRAM不需要充電更新就能保存資料", "DVD-RW只能燒錄一次", "固態硬碟的耗電量比傳統硬碟高", "CD-R只能燒錄一次"], "a": 3, "e": "光碟片上的R表示僅能燒錄一次、RW表示能燒錄多次；DRAM需週期性充電；SSD耗電量較低。"}, {"id": "n3b-12", "n": 12, "q": "小宇把作業系統從傳統硬碟搬到新的固態硬碟後，電腦開機速度明顯變快，最可能的原因是？", "o": ["固態硬碟以電流存取快閃記憶體中的資料，沒有機械轉動，存取較快", "固態硬碟使用DRAM作為儲存元件", "固態硬碟的容量一定比較大", "固態硬碟的磁盤轉速比傳統硬碟高"], "a": 0, "e": "SSD沒有馬達、讀寫頭等機械構造，以快閃記憶體作為儲存元件，用電流存取資料，所以讀寫速度快。"}, {"id": "n3b-13", "n": 13, "q": "有關快取記憶體（cache memory）的描述，下列何者正確？", "o": ["是一種DRAM", "電腦關機後內容仍然會保存", "存取速度比主記憶體快，但比CPU內部的暫存器慢", "主要用來存放BIOS開機程式"], "a": 2, "e": "快取記憶體通常以SRAM製作，斷電資料會消失；速度介於暫存器與主記憶體之間，用來存放CPU常用的資料或指令。"}, {"id": "n3b-14", "n": 14, "q": "手機規格中標示「RAM 8GB」，這裡的RAM通常指的是哪一種記憶體？", "o": ["快閃記憶體", "SRAM", "EEPROM", "DRAM"], "a": 3, "e": "電腦、手機的「記憶體」（如DDR4、DDR5）通常指的就是DRAM，用來存放正在執行中的程式和資料。"}, {"id": "n3b-15", "n": 15, "q": "將下列記憶體依存取速度由快到慢排列，正確的是？", "o": ["暫存器＞快取記憶體＞主記憶體＞輔助記憶體", "快取記憶體＞暫存器＞主記憶體＞輔助記憶體", "主記憶體＞快取記憶體＞暫存器＞輔助記憶體", "暫存器＞主記憶體＞快取記憶體＞輔助記憶體"], "a": 0, "e": "記憶體階層中，越接近CPU速度越快、容量越小：暫存器＞快取記憶體（L1＞L2＞L3）＞主記憶體＞輔助記憶體。"}, {"id": "n3b-16", "n": 16, "q": "下列各項中，讀寫速度比ROM快的有幾項？ a.暫存器 b.SRAM c.傳統硬碟 d.L1快取記憶體 e.DVD光碟 f.DRAM", "o": ["2項", "3項", "5項", "4項"], "a": 3, "e": "比ROM快的有暫存器、SRAM、L1快取記憶體、DRAM，共4項；傳統硬碟、DVD光碟屬於輔助記憶體，比ROM慢。"}, {"id": "n3b-17", "n": 17, "q": "將固態硬碟與傳統硬碟比較，下列何者正確？", "o": ["固態硬碟的價格比較便宜", "傳統硬碟的耐震度比較高", "傳統硬碟運作時沒有噪音", "固態硬碟的耗電量低、重量輕"], "a": 3, "e": "SSD讀寫快、耗電低、重量輕、無噪音、耐震度高，但價格較貴；傳統硬碟有馬達轉動，會有噪音。"}, {"id": "n3b-18", "n": 18, "q": "下列有關記憶體分類的敘述，何者正確？", "o": ["暫存器是一種輔助記憶體", "光碟屬於主記憶體", "隨身碟屬於輔助記憶體", "RAM屬於非揮發性記憶體"], "a": 2, "e": "輔助記憶體包含硬碟、光碟、隨身碟；暫存器在CPU內；RAM斷電資料消失，屬揮發性記憶體。"}, {"id": "n3b-19", "n": 19, "q": "下列行動裝置的外接設備中，何者可以擴充手機的儲存空間？", "o": ["無線充電座", "藍牙耳機", "行動電源", "micro SD記憶卡"], "a": 3, "e": "記憶卡內建快閃記憶體，可擴充行動裝置的儲存空間；其他設備與儲存容量無關。"}, {"id": "n3b-20", "n": 20, "q": "某手機規格標示「RAM 8GB／ROM 256GB」，其中的256GB是指下列何者的容量？", "o": ["DRAM", "快閃記憶體", "CPU快取記憶體", "SIM卡"], "a": 1, "e": "手機的快閃記憶體用來儲存長期保存的資料，在描述手機規格時常稱為ROM。"}, {"id": "n3b-21", "n": 21, "q": "隨機存取記憶體（RAM）中的資料會在電腦關機時隨電源一起消失，因此RAM又被稱為？", "o": ["揮發性記憶體", "非揮發性記憶體", "輔助記憶體", "唯讀記憶體"], "a": 0, "e": "RAM斷電後資料消失，稱為揮發性記憶體（volatile memory）；ROM斷電資料不消失，稱為非揮發性記憶體。"}, {"id": "n3b-22", "n": 22, "q": "下列哪一種記憶體可利用紫外線照射來抹除資料，以重複寫入資料？", "o": ["EEPROM", "快閃記憶體", "EPROM", "SRAM"], "a": 2, "e": "EPROM利用紫外線照射抹除資料；EEPROM與快閃記憶體是利用電流訊號來刪除或寫入資料。"}, {"id": "n3b-23", "n": 23, "q": "快閃記憶體與EEPROM比較，下列敘述何者正確？", "o": ["快閃記憶體必須用紫外線照射才能抹除資料", "快閃記憶體的讀寫速度較快且製作成本較低", "EEPROM屬於揮發性記憶體", "快閃記憶體斷電後資料會消失"], "a": 1, "e": "兩者都用電流訊號刪除或寫入資料，都屬非揮發性記憶體；快閃記憶體讀寫速度較快、成本較低，所以被廣泛使用。"}, {"id": "n3b-24", "n": 24, "q": "硬碟上標示「7200 RPM」，其意義為何？", "o": ["硬碟容量為7200GB", "每分鐘可傳輸7200MB資料", "磁盤轉軸每分鐘旋轉7200圈", "每秒可讀寫7200次"], "a": 2, "e": "RPM是Revolutions Per Minute，每分鐘旋轉圈數；轉速越快，讀寫資料的速度越快。"}, {"id": "n3b-25", "n": 25, "q": "一般個人電腦內接硬碟常使用的傳輸介面為下列何者？", "o": ["SATA", "HDMI", "RJ-45", "line out"], "a": 0, "e": "個人電腦的硬碟介面一般為第3代SATA介面（SATA 3），傳輸速度約6Gbps。"}, {"id": "n3b-26", "n": 26, "q": "光碟片上標示「DVD-R」，其中「R」代表什麼意思？", "o": ["可以重複燒錄多次", "只能燒錄一次", "只能讀取，完全無法燒錄", "容量為25GB"], "a": 1, "e": "光碟片上的R表示僅能燒錄一次，RW表示能燒錄多次。"}, {"id": "n3b-27", "n": 27, "q": "公司希望陣列中的每顆硬碟都寫入一模一樣的資料，作為備份（鏡像功能），應採用哪一種技術？", "o": ["RAID 0", "NAS", "SAS", "RAID 1"], "a": 3, "e": "RAID 1在每個硬碟寫入相同資料（鏡像）做備份；RAID 0是把多個硬碟空間組合成一個大空間。"}, {"id": "n3b-28", "n": 28, "q": "內接多個硬碟並內建網路功能與檔案管理軟體，讓使用者可以透過網路隨時存取資料的小型雲端硬碟伺服器，稱為？", "o": ["SAS", "RAID 0", "NAS", "OTG"], "a": 2, "e": "NAS（網路附接儲存器）是小型的雲端硬碟伺服器，常用於大量資料的備份。"}, {"id": "n3b-29", "n": 29, "q": "依記憶體階層，下列何者的儲存容量通常最大？", "o": ["暫存器", "L1快取記憶體", "主記憶體", "輔助記憶體"], "a": 3, "e": "越接近CPU速度越快、容量越小；輔助記憶體（如硬碟）速度最慢、容量最大。"}, {"id": "n3b-30", "n": 30, "q": "固態硬碟有使用次數限制的是下列哪一種動作？", "o": ["讀取資料", "寫入資料", "開機", "通電"], "a": 1, "e": "固態硬碟可無限次讀取，但有寫入次數的限制（例如10萬次）。"}]}, {"id": "n3c", "title": "3-5～3-6", "desc": "輸入輸出設備・行動裝置", "qs": [{"id": "n3c-1", "n": 1, "q": "某雷射印表機的規格標示「30 ppm」，其意義為何？", "o": ["每吋可列印30個點", "每秒可傳遞30KB的列印資料", "印表機記憶體為30MB", "每分鐘可列印30頁"], "a": 3, "e": "ppm是pages per minute，每分鐘列印頁數；dpi才是每吋點數（解析度）。"}, {"id": "n3c-2", "n": 2, "q": "電腦教室想提升電腦的執行效能，下列何者最不可能是優先考慮更換的設備？", "o": ["CPU", "主記憶體", "喇叭", "顯示卡"], "a": 2, "e": "CPU、主記憶體、顯示卡都會影響執行與繪圖效能；喇叭只是輸出聲音，與執行效能無關。"}, {"id": "n3c-3", "n": 3, "q": "某電視宣稱在液晶顯示器背光源上緣加入約3～12奈米的微小半導體晶體，以調整光線、讓色彩更鮮艷。這種技術是？", "o": ["OLED", "QLED", "陰極射線管", "電漿"], "a": 1, "e": "QLED（量子點發光二極體）是把量子點加在液晶顯示器背光源上緣，使色彩更鮮艷。"}, {"id": "n3c-4", "n": 4, "q": "玫芳購買印表機時特別重視列印品質，她應該比較下列哪一項規格？", "o": ["ppm", "外殼顏色", "重量", "dpi"], "a": 3, "e": "印表機解析度（dpi，每英吋可列印點數）是衡量列印品質的標準，解析度越高品質越好。"}, {"id": "n3c-5", "n": 5, "q": "圖書館想把古籍的紙本頁面轉成數位檔案，並辨識成可以編修的文字檔，應使用下列哪一種組合？", "o": ["掃描器搭配OCR軟體", "雷射印表機", "喇叭搭配音效卡", "繪圖板"], "a": 0, "e": "掃描器將影像或文字稿轉換為數位資料，搭配OCR（光學字元辨識）軟體可辨識文字並存成可編修的文字檔。"}, {"id": "n3c-6", "n": 6, "q": "醫院開立需要複寫的多聯式處方箋，最適合使用哪一種印表機？", "o": ["雷射印表機", "噴墨印表機", "點矩陣印表機", "3D印表機"], "a": 2, "e": "點矩陣印表機以撞針撞擊色帶列印，可列印需複寫的多聯式文件，但列印時聲音較大。"}, {"id": "n3c-7", "n": 7, "q": "看診時用晶片讀卡機讀取健保卡的資料，其中「健保卡」屬於下列何者？", "o": ["輸入設備", "輸出設備", "輸出媒體", "輸入媒體"], "a": 3, "e": "媒體是指儲存資料的介質。晶片讀卡機是輸入設備，IC晶片卡（健保卡）則是輸入媒體。"}, {"id": "n3c-8", "n": 8, "q": "可以捲曲的電視、可以對折的手機螢幕，最可能是採用下列哪一種材質製作？", "o": ["液晶（LCD）", "有機發光二極體（OLED）", "DRAM", "快閃記憶體"], "a": 1, "e": "OLED可自行發光、不需背光模組，具有超廣角、耗電量低、可捲曲等特性。"}, {"id": "n3c-9", "n": 9, "q": "學校電腦教室更新設備：觸控螢幕、鍵盤、網路攝影機、投影機、雷射印表機、數位筆。其中一定具有輸出功能的設備有幾項？", "o": ["2項", "4項", "3項", "5項"], "a": 2, "e": "觸控螢幕（兼具輸入與輸出）、投影機、雷射印表機有輸出功能，共3項；鍵盤、網路攝影機、數位筆是輸入設備。"}, {"id": "n3c-10", "n": 10, "q": "利用微小的噴嘴將墨點噴在紙張上，耗材為墨水匣的是哪一種印表機？", "o": ["雷射印表機", "噴墨印表機", "點矩陣印表機", "3D印表機"], "a": 1, "e": "噴墨印表機用噴嘴噴墨列印，耗材為墨水匣、噴嘴頭；雷射印表機用碳粉匣；點矩陣用色帶。"}, {"id": "n3c-11", "n": 11, "q": "點矩陣印表機的列印速度，通常使用下列哪一種單位表示？", "o": ["ppm", "dpi", "cps", "bps"], "a": 2, "e": "點矩陣印表機列印速度單位為cps（每秒列印字元數）；噴墨、雷射印表機為ppm（每分鐘列印頁數）。"}, {"id": "n3c-12", "n": 12, "q": "一支手機標示螢幕為「6.1吋」，這個數字指的是什麼？", "o": ["螢幕的寬度", "螢幕的高度", "含邊框的機身長度", "可視區域的對角線長度"], "a": 3, "e": "顯示器尺寸是指可視區域的對角線長度。"}, {"id": "n3c-13", "n": 13, "q": "下列哪一種印表機是利用列印字頭上的撞針撞擊色帶，屬於撞擊式印表機？", "o": ["點矩陣印表機", "雷射印表機", "噴墨印表機", "熱昇華印表機"], "a": 0, "e": "點矩陣印表機屬於撞擊式；噴墨、雷射印表機屬於非撞擊式。"}, {"id": "n3c-14", "n": 14, "q": "關於電腦領域中常見的單位，下列應用場景描述何者最正確？", "o": ["某台噴墨印表機的解析度為4800 dpi", "某顆CPU的時脈頻率為3.2G RPM", "某台點矩陣印表機的列印速度為80 ppm", "某顆傳統硬碟的轉速為5400 GHz"], "a": 0, "e": "dpi用於印表機解析度；CPU時脈用GHz；點矩陣印表機速度用cps；硬碟轉速用RPM。"}, {"id": "n3c-15", "n": 15, "q": "彩色噴墨印表機的印刷四原色CMYK中，「K」代表哪一種顏色？", "o": ["洋紅色", "黑色", "青色", "黃色"], "a": 1, "e": "CMYK為青（Cyan）、洋紅（Magenta）、黃（Yellow）、黑（blacK）。"}, {"id": "n3c-16", "n": 16, "q": "4K顯示器常見的解析度為下列何者？", "o": ["1,920×1,080", "7,680×4,320", "3,840×2,160", "1,280×720"], "a": 2, "e": "Full HD為1,920×1,080；4K為3,840×2,160（水平像素接近4,000）；8K為7,680×4,320。"}, {"id": "n3c-17", "n": 17, "q": "顯示器規格中，「最亮點與最暗點的比值」是指哪一項規格？數值越高色彩越鮮豔。", "o": ["亮度", "解析度", "尺寸", "對比"], "a": 3, "e": "對比是最亮點與最暗點的比值，例如80,000:1；亮度是畫面發出的光線強度。"}, {"id": "n3c-18", "n": 18, "q": "顯示器的「亮度」常使用下列哪一種單位表示？", "o": ["cd∕m²", "dpi", "ppm", "RPM"], "a": 0, "e": "亮度單位為cd∕m²（每平方公尺的燭光），例如300cd∕m²。"}, {"id": "n3c-19", "n": 19, "q": "OLED顯示器的厚度比一般液晶顯示器輕薄許多，主要原因是？", "o": ["使用量子點調整光線", "背光模組做得比較薄", "OLED可以自行發光，不需要背光模組", "使用陰極射線管顯像"], "a": 2, "e": "OLED可自行發光，不需使用背光模組提供光源，所以比液晶顯示器輕薄。"}, {"id": "n3c-20", "n": 20, "q": "以30µm（微米）以下的LED元件組合而成，不需背光模組，具高對比、高亮度特性的新一代顯示技術是？", "o": ["LCD", "QLED", "陰極射線管", "Micro LED"], "a": 3, "e": "Micro LED由微小的LED元件組成，LED本身會發光，不需背光模組，可減少耗能、提高壽命。"}, {"id": "n3c-21", "n": 21, "q": "雷射印表機與噴墨印表機比較，下列敘述何者正確？", "o": ["雷射印表機的耗材為色帶", "雷射印表機列印速度較快，且不會有墨水暈開的問題", "噴墨印表機最適合列印多聯式複寫文件", "雷射印表機屬於撞擊式印表機"], "a": 1, "e": "雷射印表機以加熱加壓將碳粉壓印到紙上，速度較噴墨快、不會暈開，適合大量文件；兩者都是非撞擊式。"}, {"id": "n3c-22", "n": 22, "q": "某種喇叭內建擴大電路、需要插電，大多有音量調整鈕，這種喇叭稱為？", "o": ["被動式喇叭", "網路攝影機", "麥克風", "主動式喇叭"], "a": 3, "e": "主動式喇叭內建擴大電路、需插電；被動式喇叭沒有擴大器、不需插電，只能用電腦軟體調整音量。"}, {"id": "n3c-23", "n": 23, "q": "下列哪一種設備同時具有輸入與輸出的功能？", "o": ["觸控螢幕", "掃描器", "喇叭", "繪圖板"], "a": 0, "e": "觸控螢幕可顯示畫面（輸出），也可用手指點選輸入，兼具輸入與輸出功能。"}, {"id": "n3c-24", "n": 24, "q": "以噴印液態塑膠、金屬等材料的方式堆疊出立體模型，甚至可用來列印食物的是？", "o": ["事務機", "雲端印表機", "3D印表機", "點矩陣印表機"], "a": 2, "e": "3D印表機以噴印液態塑膠、金屬等材料堆疊3D模型，常用來列印模型、零件、工具。"}, {"id": "n3c-25", "n": 25, "q": "智慧型手機的CPU、RAM等元件通常鑲嵌在主機板上、不能拆卸，主要原因是？", "o": ["為了儘量縮小元件的體積", "方便使用者自行升級", "讓手機更容易維修", "可以提升螢幕解析度"], "a": 0, "e": "手機要求輕薄易攜，CPU、RAM鑲嵌在主機板上（甚至整合在同一晶片），是為了縮小元件體積。"}, {"id": "n3c-26", "n": 26, "q": "阿哲常用手機拍攝4K影片，擔心儲存空間不夠，購買新手機時最應該注意下列哪一項？", "o": ["電池容量是否夠大", "是否支援5G行動通訊", "可否外接記憶卡或內建儲存容量是否夠大", "螢幕亮度是否夠高"], "a": 2, "e": "影片需要大量儲存空間，應注意快閃記憶體（ROM）容量或是否能外接micro SD記憶卡。"}, {"id": "n3c-27", "n": 27, "q": "下列哪一組設備全部都屬於輸入設備？", "o": ["滑鼠、喇叭、印表機", "投影機、數位筆、鍵盤", "鍵盤、掃描器、網路攝影機", "繪圖板、顯示器、讀卡機"], "a": 2, "e": "鍵盤、掃描器、網路攝影機都是輸入設備；喇叭、印表機、投影機、顯示器是輸出設備。"}, {"id": "n3c-28", "n": 28, "q": "兼具列印、影印、掃描、傳真等多項功能的印表機稱為？", "o": ["3D印表機", "事務機", "點矩陣印表機", "繪圖板"], "a": 1, "e": "事務機兼具列印、影印、掃瞄、傳真、列印光碟封面等多項功能。"}, {"id": "n3c-29", "n": 29, "q": "撞擊式印表機的針腳數越多，會有什麼結果？", "o": ["列印速度單位改用ppm", "列印解析度越高，列印品質越好", "列印時越不會發出聲響", "耗材改為碳粉匣"], "a": 1, "e": "撞擊式印表機的針腳數越多，列印解析度越高，列印品質越好。"}]}, {"id": "n3t", "title": "進階－統測精選改編", "desc": "110～115統測硬體題改編", "qs": [{"id": "n3t-1", "n": 1, "q": "【改編自110統測】CPU中的「指令暫存器（instruction register, IR）」主要用途為何？", "o": ["暫存正在執行中的指令", "存放下一個要執行指令的位址", "記錄CPU已經運作的時間", "存放常用資料以減少讀取主記憶體的次數"], "a": 0, "e": "指令暫存器暫存正在執行中的指令；存放下一個指令位址的是程式計數器（PC）；存放常用資料的是快取記憶體。"}, {"id": "n3t-2", "n": 2, "q": "【改編自110統測】CPU執行程式時，用來存放「下一個要執行的指令位址」的暫存器是？", "o": ["累加器（ACC）", "旗標暫存器（FR）", "程式計數器（PC）", "指令暫存器（IR）"], "a": 2, "e": "程式計數器（PC）存放下一個要執行的指令位址；累加器存放運算結果；旗標暫存器存放執行後的狀態。"}, {"id": "n3t-3", "n": 3, "q": "【改編自112統測】關於個人電腦CPU的敘述，下列何者正確？", "o": ["程式計數器用來暫存正在執行中的指令", "快取記憶體只有L1一種，且都放在主機板上", "多核心CPU具有多個運算核心，比單核心CPU較易支援平行處理", "CPU一個機器週期包括擷取、編碼、執行、儲存四個步驟"], "a": 2, "e": "多核心處理器具有多個運算核心，較易平行處理；正在執行的指令放指令暫存器；機器週期是擷取、解碼、執行、儲存。"}, {"id": "n3t-4", "n": 4, "q": "【改編自112統測】關於快取記憶體L1、L2、L3的敘述，下列何者正確？", "o": ["存取速度由快到慢為L3＞L2＞L1", "近期開發的CPU會內建L1、L2、L3快取記憶體", "快取記憶體以DRAM製作", "快取記憶體的容量比主記憶體大"], "a": 1, "e": "速度L1＞L2＞L3；早期CPU內建L1、L2，近期再加入L3；快取記憶體以SRAM製作，容量比主記憶體小。"}, {"id": "n3t-5", "n": 5, "q": "【改編自113統測】有關固態硬碟（SSD）與傳統硬碟（HDD）的敘述，下列何者正確？", "o": ["SSD以金屬磁盤作為儲存元件", "HDD以快閃記憶體作為儲存元件", "HDD存取資料時需要磁盤旋轉與讀寫頭移動，SSD則沒有這些機械動作", "SSD內有馬達驅動讀寫頭，所以耐震度較低"], "a": 2, "e": "HDD以磁盤加讀寫頭存取，需考量旋轉與搜尋時間；SSD以快閃記憶體作為儲存元件，沒有馬達、讀寫頭，耐震度高。"}, {"id": "n3t-6", "n": 6, "q": "【改編自113統測】固態硬碟長時間使用後，內部儲存的資料變得零散，下列敘述何者正確？", "o": ["SSD沒有磁盤旋轉與讀寫頭移動，資料零散幾乎不影響存取速度，可不必進行磁碟重組", "SSD必須經常進行磁碟重組，否則無法開機", "SSD的儲存元件是金屬磁盤，所以零散時會變慢", "HDD沒有旋轉及搜尋時間，只需考量傳輸時間"], "a": 0, "e": "磁碟重組是為了減少傳統硬碟讀寫頭來回移動的時間；SSD沒有機械構造，不必像HDD一樣做磁碟重組。"}, {"id": "n3t-7", "n": 7, "q": "【改編自114統測】關於資訊產品規格與單位的搭配，下列何者正確？", "o": ["傳統硬碟的轉速：5400Gbps", "記憶體的容量：3200RPM", "CPU的時脈頻率：3.6GHz", "雷射印表機的列印速度：1200dpi"], "a": 2, "e": "硬碟轉速用RPM；記憶體容量用GB；CPU時脈用GHz；雷射印表機速度用ppm，dpi是解析度。"}, {"id": "n3t-8", "n": 8, "q": "【改編自114統測】關於資訊產品規格的敘述，下列何者錯誤？", "o": ["網路卡的傳輸速率是1Gbps", "雷射印表機的列印速度是40ppm", "傳統硬碟的轉速是7200RPM", "CPU的時脈頻率是4.2Gbps"], "a": 3, "e": "CPU時脈頻率的單位是GHz（十億次赫茲），Gbps是資料傳輸速率的單位。"}, {"id": "n3t-9", "n": 9, "q": "【改編自115統測】一般個人電腦在預設狀態下，下列哪一種連線屬於串列傳輸，且可以同時傳送與接收資料（全雙工）？", "o": ["主機板上的網路卡以RJ-45連接交換器，同時收送資料", "電腦經VGA線將畫面送到螢幕", "筆電透過HDMI將簡報畫面傳送到投影機", "鍵盤經PS/2埠將按鍵資料送入電腦"], "a": 0, "e": "網路卡連接交換器採串列傳輸，且可同時傳送與接收資料（全雙工）；VGA、HDMI是單向傳送畫面；PS/2鍵盤不是全雙工。"}, {"id": "n3t-10", "n": 10, "q": "【改編自115統測】小李想把電腦升級成AI主機，增購了一條DDR5記憶體及一張PCI-E x16獨立顯示卡，這兩樣元件應分別安裝在主機板的哪兩種插槽？", "o": ["CPU插槽、M.2插槽", "記憶體插槽、PCI-E x16插槽", "M.2插槽、記憶體插槽", "PCI-E x16插槽、CPU插槽"], "a": 1, "e": "DRAM記憶體插在記憶體插槽（成排的長條插槽）；獨立顯示卡插在PCI-E x16插槽。"}, {"id": "n3t-11", "n": 11, "q": "【改編自115統測】主機板上的「電源插槽」（一排多針腳的長方形插座）主要用途為何？", "o": ["連接硬碟機或光碟機", "連接機殼上的電源開關與指示燈", "連接CPU散熱風扇", "連接電源供應器的排線，提供主機板電力"], "a": 3, "e": "電源插槽用來連接電源接頭（電源供應器的排線）；它有防呆設計，接頭只能以正確方向插入。"}, {"id": "n3t-12", "n": 12, "q": "【改編自115統測】下列有關主機板插槽的敘述，何者錯誤？", "o": ["記憶體插槽可安插DRAM記憶體", "PCI-E x16插槽可安插獨立顯示卡", "M.2插槽可連接固態硬碟", "電源插槽用來連接機殼前方的USB插孔"], "a": 3, "e": "電源插槽用來連接電源供應器的排線；機殼前方USB插孔是接到主機板上專用的USB排針。"}]}, {"id": "n3s", "title": "進階－計算題與匯流排補充", "desc": "時脈・MIPS・cps・ppm・解析度・定址・匯流排", "qs": [{"id": "n3s-1", "n": 1, "q": "某CPU的時脈頻率為2GHz，其時脈週期為多少？", "o": ["0.2奈秒", "0.5奈秒", "2奈秒", "5奈秒"], "a": 1, "e": "時脈週期＝1÷時脈頻率＝1÷(2×10⁹)秒＝0.5×10⁻⁹秒＝0.5奈秒（ns）。"}, {"id": "n3s-2", "n": 2, "q": "某CPU的時脈頻率為2.5GHz，其時脈週期為多少？", "o": ["0.4奈秒", "2.5奈秒", "0.25奈秒", "4奈秒"], "a": 0, "e": "1÷(2.5×10⁹)秒＝0.4×10⁻⁹秒＝0.4奈秒。"}, {"id": "n3s-3", "n": 3, "q": "若某CPU的時脈週期為0.25奈秒，則其時脈頻率為多少？", "o": ["2.5GHz", "250MHz", "4GHz", "400MHz"], "a": 2, "e": "時脈頻率＝1÷時脈週期＝1÷(0.25×10⁻⁹)＝4×10⁹Hz＝4GHz。"}, {"id": "n3s-4", "n": 4, "q": "若某微處理器的時脈週期為2奈秒，則其時脈頻率為多少？", "o": ["2GHz", "200MHz", "5GHz", "500MHz"], "a": 3, "e": "1÷(2×10⁻⁹)＝0.5×10⁹Hz＝5億Hz＝500MHz。"}, {"id": "n3s-5", "n": 5, "q": "某CPU的時脈頻率為3GHz，若執行1個指令需要6個時脈週期，則執行1個指令需要多少時間？", "o": ["0.5奈秒", "2奈秒", "18奈秒", "0.33奈秒"], "a": 1, "e": "時脈週期＝1÷(3×10⁹)秒≒0.333奈秒；6個時脈＝6×(1÷3)奈秒＝2奈秒。"}, {"id": "n3s-6", "n": 6, "q": "某CPU時脈頻率為2GHz，平均執行1個指令需要4個時脈週期，則平均執行1個指令約需多少時間？", "o": ["8奈秒", "0.5奈秒", "2奈秒", "0.125奈秒"], "a": 2, "e": "時脈週期＝1÷(2×10⁹)＝0.5奈秒；4×0.5奈秒＝2奈秒。"}, {"id": "n3s-7", "n": 7, "q": "某CPU時脈頻率為2GHz，若每個指令平均需要4個時脈週期，則此CPU的執行速度約為多少MIPS？", "o": ["500 MIPS", "8000 MIPS", "2000 MIPS", "50 MIPS"], "a": 0, "e": "每秒有2×10⁹個時脈，每個指令用4個時脈，每秒可執行2×10⁹÷4＝5×10⁸個指令＝500百萬個指令＝500 MIPS。"}, {"id": "n3s-8", "n": 8, "q": "某CPU的執行速度為2000 MIPS，則它執行1個指令需要多少時間？", "o": ["2奈秒", "0.5微秒", "0.5奈秒", "2微秒"], "a": 2, "e": "2000 MIPS＝每秒2000×10⁶＝2×10⁹個指令；1個指令＝1÷(2×10⁹)秒＝0.5奈秒。"}, {"id": "n3s-9", "n": 9, "q": "某CPU的執行速度為400 MIPS，執行一個含有8000萬個指令的程式，約需多少時間？", "o": ["0.2秒", "2秒", "0.02秒", "5秒"], "a": 0, "e": "400 MIPS＝每秒4×10⁸個指令；8000萬＝8×10⁷個指令；8×10⁷÷(4×10⁸)＝0.2秒。"}, {"id": "n3s-10", "n": 10, "q": "某CPU執行10個指令共花了4奈秒，則此CPU的執行速度約為多少MIPS？", "o": ["250 MIPS", "400 MIPS", "2500 MIPS", "25000 MIPS"], "a": 2, "e": "每個指令0.4奈秒，每秒可執行1÷(0.4×10⁻⁹)＝2.5×10⁹個指令＝2500百萬個＝2500 MIPS。"}, {"id": "n3s-11", "n": 11, "q": "某台點矩陣印表機的列印速度為300 cps，若一頁文件有2400個字元，列印一頁約需多少時間？", "o": ["80秒", "0.125秒", "720秒", "8秒"], "a": 3, "e": "cps是每秒列印字元數；2400÷300＝8秒。"}, {"id": "n3s-12", "n": 12, "q": "某台點矩陣印表機的列印速度為200 cps，1分鐘最多可以列印多少個字元？", "o": ["200個", "3,333個", "12,000個", "1,200個"], "a": 2, "e": "200字元∕秒×60秒＝12,000個字元。"}, {"id": "n3s-13", "n": 13, "q": "某台雷射印表機的列印速度為25 ppm，列印150頁的講義至少需要多少時間？", "o": ["25分鐘", "6分鐘", "3,750分鐘", "60分鐘"], "a": 1, "e": "ppm是每分鐘列印頁數；150÷25＝6分鐘。"}, {"id": "n3s-14", "n": 14, "q": "印製72頁報告，噴墨印表機速度為12 ppm、雷射印表機為36 ppm，使用雷射印表機可比噴墨印表機節省多少時間？", "o": ["2分鐘", "6分鐘", "8分鐘", "4分鐘"], "a": 3, "e": "噴墨72÷12＝6分鐘；雷射72÷36＝2分鐘；6－2＝4分鐘。"}, {"id": "n3s-15", "n": 15, "q": "以解析度600 dpi的印表機列印一個2吋×3吋的區域，理論上最多可以印出多少個點？", "o": ["3,600個", "360,000個", "2,160,000個", "1,080,000個"], "a": 2, "e": "dpi是每英吋點數；寬2×600＝1200點，高3×600＝1800點；1200×1800＝2,160,000點。"}, {"id": "n3s-16", "n": 16, "q": "4K顯示器（3,840×2,160）的總像素數，大約是Full HD顯示器（1,920×1,080）的幾倍？", "o": ["2倍", "4倍", "8倍", "16倍"], "a": 1, "e": "水平與垂直像素都是2倍，總像素為2×2＝4倍。"}, {"id": "n3s-17", "n": 17, "q": "某傳統硬碟標示轉速為7200 RPM，代表磁盤每秒鐘旋轉幾圈？", "o": ["7200圈", "432,000圈", "72圈", "120圈"], "a": 3, "e": "RPM是每分鐘旋轉圈數；7200÷60秒＝每秒120圈。"}, {"id": "n3s-18", "n": 18, "q": "以傳輸速度480Mbps的USB 2.0傳送一個600MB的檔案，理論上至少需要多少時間？（1 Byte＝8 bits）", "o": ["1.25秒", "80秒", "10秒", "0.8秒"], "a": 2, "e": "600MB×8＝4800Mb；4800Mb÷480Mbps＝10秒。注意Byte（B）與bit（b）相差8倍。"}, {"id": "n3s-19", "n": 19, "q": "以傳輸速度5Gbps的USB 3.2 Gen 1傳送一個2.5GB的影片，理論上至少需要多少時間？（1 Byte＝8 bits）", "o": ["4秒", "0.5秒", "12.5秒", "40秒"], "a": 0, "e": "2.5GB×8＝20Gb；20Gb÷5Gbps＝4秒。"}, {"id": "n3s-20", "n": 20, "q": "某電腦的位址匯流排有20條位址線，CPU可定址的最大記憶體空間為多少？", "o": ["20MB", "1MB", "1GB", "20KB"], "a": 1, "e": "N條位址線可定址2ᴺ Bytes；2²⁰ Bytes＝1MB。"}, {"id": "n3s-21", "n": 21, "q": "某電腦的位址匯流排有32條位址線，CPU最多可定址多少記憶體空間？", "o": ["4GB", "32GB", "4MB", "32MB"], "a": 0, "e": "2³² Bytes＝2²×2³⁰ Bytes＝4GB。"}, {"id": "n3s-22", "n": 22, "q": "若要讓CPU能直接定址256MB的記憶體，位址匯流排至少需要幾條位址線？", "o": ["8條", "18條", "28條", "256條"], "a": 2, "e": "256MB＝2⁸×2²⁰＝2²⁸ Bytes，所以至少需要28條位址線。"}, {"id": "n3s-23", "n": 23, "q": "某電腦的位址匯流排為24位元、資料匯流排為64位元，下列敘述何者正確？", "o": ["可定址24MB，一次傳輸64 Bytes", "可定址16MB，一次傳輸64 Bytes", "可定址64MB，一次傳輸24 bits", "可定址16MB，一次傳輸8 Bytes"], "a": 3, "e": "2²⁴ Bytes＝16MB；資料匯流排64位元＝一次傳輸64 bits＝8 Bytes。"}, {"id": "n3s-24", "n": 24, "q": "資料、位址、控制三種匯流排中，傳輸方向為「雙向」的是哪一種？", "o": ["位址匯流排", "控制匯流排", "三種都是單向", "資料匯流排"], "a": 3, "e": "資料匯流排在各單元間雙向傳送資料；位址匯流排、控制匯流排是CPU向外傳送訊號，為單向（依技高課本補充資料）。"}, {"id": "n3s-25", "n": 25, "q": "決定CPU可定址的最大記憶體空間的是下列哪一項？", "o": ["位址匯流排的位址線數", "資料匯流排的寬度", "控制匯流排的線數", "CPU的時脈頻率"], "a": 0, "e": "N條位址線可定址2ᴺ個位址，位址匯流排的線數決定最大定址空間。"}, {"id": "n3s-26", "n": 26, "q": "匯流排一次能傳輸的資料量稱為「匯流排寬度」，這是指哪一種匯流排？", "o": ["位址匯流排", "資料匯流排", "控制匯流排", "擴充匯流排"], "a": 1, "e": "資料匯流排一次能傳輸的資料量稱為匯流排寬度（bus width），例如64位元。"}, {"id": "n3s-27", "n": 27, "q": "CPU向外送出「讀取」「寫入」等控制訊號，是透過哪一種匯流排？", "o": ["資料匯流排", "位址匯流排", "內部匯流排", "控制匯流排"], "a": 3, "e": "控制匯流排是CPU向外傳送控制訊號的管道。"}, {"id": "n3s-28", "n": 28, "q": "匯流排依傳輸對象分類時，CPU內部各元件之間傳輸資料的管道稱為？", "o": ["系統匯流排", "擴充匯流排", "內部匯流排", "位址匯流排"], "a": 2, "e": "內部匯流排：CPU內部元件之間；系統匯流排：CPU與記憶單元之間；擴充匯流排：晶片組與輸出入單元之間。"}, {"id": "n3s-29", "n": 29, "q": "CPU與記憶單元之間傳輸資料的管道稱為？", "o": ["系統匯流排", "內部匯流排", "擴充匯流排", "控制匯流排"], "a": 0, "e": "系統匯流排連接CPU與記憶單元（主記憶體）。"}, {"id": "n3s-30", "n": 30, "q": "晶片組與輸出入單元（如USB、SATA裝置）之間傳輸資料的管道稱為？", "o": ["內部匯流排", "擴充匯流排", "系統匯流排", "資料匯流排"], "a": 1, "e": "擴充匯流排是晶片組與輸出入單元之間傳輸資料的管道。"}, {"id": "n3s-31", "n": 31, "q": "下列有關匯流排的敘述，何者錯誤？", "o": ["資料匯流排的傳輸方向為雙向", "位址匯流排是CPU向外傳送位址訊號的單向管道", "資料匯流排與位址匯流排的傳輸方向都是單向", "N條位址線可定址2ᴺ Bytes的記憶體空間"], "a": 2, "e": "資料匯流排為雙向；位址匯流排、控制匯流排為單向。"}, {"id": "n3s-32", "n": 32, "q": "下列哪一項不屬於「依傳遞內容」區分的匯流排種類？", "o": ["擴充匯流排", "資料匯流排", "位址匯流排", "控制匯流排"], "a": 0, "e": "依傳遞內容分為資料、位址、控制匯流排；擴充匯流排是依「傳輸對象」分類的（另有內部、系統匯流排）。"}, {"id": "n3s-33", "n": 33, "q": "8K顯示器（7,680×4,320）的總像素數，大約是Full HD顯示器（1,920×1,080）的幾倍？", "o": ["4倍", "8倍", "32倍", "16倍"], "a": 3, "e": "水平7,680÷1,920＝4倍，垂直4,320÷1,080＝4倍，總像素4×4＝16倍。"}, {"id": "n3s-34", "n": 34, "q": "8K顯示器（7,680×4,320）的總像素數，大約是4K顯示器（3,840×2,160）的幾倍？", "o": ["4倍", "2倍", "8倍", "16倍"], "a": 0, "e": "水平與垂直像素都是4K的2倍，總像素為2×2＝4倍。"}]}, {"id": "n3e", "title": "進階－英文縮寫", "desc": "CMYK・RGB・BIOS・CPU・RAM・USB・RoHS等原文", "qs": [{"id": "n3e-1", "n": 1, "q": "彩色印表機使用的印刷四原色CMYK中，「M」代表哪一種顏色？", "o": ["黑色", "洋紅色（Magenta）", "青色", "黃色"], "a": 1, "e": "C＝青（Cyan）、M＝洋紅（Magenta）、Y＝黃（Yellow）、K＝黑（blacK）。"}, {"id": "n3e-2", "n": 2, "q": "印刷四原色CMYK中的「C」，其英文原文與中文為何？", "o": ["Cyan，青色", "Crimson，深紅色", "Clear，透明色", "Copper，銅色"], "a": 0, "e": "C是Cyan（青色）；CMYK混合可調配出大部分的顏色。"}, {"id": "n3e-3", "n": 3, "q": "色彩模式RGB分別代表哪三種顏色？", "o": ["紅、灰、藍", "紅、綠、黑", "紅、綠、藍", "紅、金、藍"], "a": 2, "e": "RGB＝Red（紅）、Green（綠）、Blue（藍），是光的三原色。"}, {"id": "n3e-4", "n": 4, "q": "一般而言，電腦螢幕與彩色印表機分別使用哪一種色彩模式來呈現顏色？", "o": ["螢幕：CMYK；印表機：RGB", "兩者都使用RGB", "兩者都使用CMYK", "螢幕：RGB；印表機：CMYK"], "a": 3, "e": "螢幕會發光，用光的三原色RGB；印表機在紙上印墨水或碳粉，用印刷四原色CMYK。"}, {"id": "n3e-5", "n": 5, "q": "BIOS的英文全名為何？", "o": ["Binary Integrated Operating System", "Boot Input / Output Setup", "Basic Input / Output System", "Basic Internal Operation Software"], "a": 2, "e": "BIOS＝Basic Input / Output System，基本輸入∕輸出系統，儲存電腦的開機程式。"}, {"id": "n3e-6", "n": 6, "q": "CPU的英文全名為何？", "o": ["Computer Personal Unit", "Central Processing Unit", "Control Program Unit", "Central Program Utility"], "a": 1, "e": "CPU＝Central Processing Unit，中央處理單元，又稱微處理器。"}, {"id": "n3e-7", "n": 7, "q": "下列電腦五大單元的英文縮寫與中文配對，何者錯誤？", "o": ["ALU：算術∕邏輯單元", "MU：記憶單元", "CU：中央處理單元", "OU：輸出單元"], "a": 2, "e": "CU是Control Unit，控制單元；中央處理單元是CPU。"}, {"id": "n3e-8", "n": 8, "q": "顯示卡上的GPU，其英文全名為何？", "o": ["General Processing Unit", "Graphics Processing Unit", "Global Positioning Unit", "Gateway Processing Unit"], "a": 1, "e": "GPU＝Graphics Processing Unit，圖像處理器（圖形處理單元），負責繪圖運算。"}, {"id": "n3e-9", "n": 9, "q": "下列記憶體英文全名的配對，何者正確？", "o": ["RAM：Read Access Memory", "RAM：Rapid Access Memory", "ROM：Random Only Memory", "ROM：Read Only Memory"], "a": 3, "e": "RAM＝Random Access Memory（隨機存取記憶體）；ROM＝Read Only Memory（唯讀記憶體）。"}, {"id": "n3e-10", "n": 10, "q": "SRAM中的「S」代表什麼？", "o": ["Serial，序列", "Solid，固態", "Static，靜態", "Storage，儲存"], "a": 2, "e": "SRAM＝Static RAM，靜態隨機存取記憶體，不需週期性充電更新；DRAM的D是Dynamic（動態）。"}, {"id": "n3e-11", "n": 11, "q": "SSD的英文全名為何？", "o": ["Solid-State Drive", "Super Speed Disk", "Static Storage Device", "Serial Storage Drive"], "a": 0, "e": "SSD＝Solid-State Drive，固態硬碟；HDD＝Hard Disk Drive，硬式磁碟機。"}, {"id": "n3e-12", "n": 12, "q": "EPROM中的第一個「E」代表什麼？", "o": ["Electric，電子", "External，外部", "Extended，延伸", "Erasable，可抹除"], "a": 3, "e": "EPROM＝Erasable Programmable ROM，可抹除可程式唯讀記憶體；EEPROM多了一個Electrically（電子）。"}, {"id": "n3e-13", "n": 13, "q": "點矩陣印表機的速度單位cps，其英文原文與意義為何？", "o": ["Cycles Per Second，每秒週期數", "Clocks Per Second，每秒時脈數", "Characters Per Second，每秒列印字元數", "Copies Per Second，每秒影印份數"], "a": 2, "e": "cps＝characters per second；噴墨、雷射印表機的ppm＝pages per minute，每分鐘列印頁數。"}, {"id": "n3e-14", "n": 14, "q": "印表機解析度的單位dpi，其英文原文為何？", "o": ["dots per inch，每英吋點數", "data per instruction，每指令資料量", "display pixel index，顯示像素索引", "dots per image，每張影像點數"], "a": 0, "e": "dpi＝dots per inch，每英吋可列印的點數，解析度越高列印品質越好。"}, {"id": "n3e-15", "n": 15, "q": "硬碟轉速的單位RPM，其英文原文為何？", "o": ["Rotations Per Millisecond", "Read Per Minute", "Records Per Memory", "Revolutions Per Minute"], "a": 3, "e": "RPM＝Revolutions Per Minute，每分鐘旋轉圈數。"}, {"id": "n3e-16", "n": 16, "q": "USB的英文全名為何？", "o": ["Ultra Speed Bus", "United System Bus", "Universal Serial Bus", "Universal Storage Bus"], "a": 2, "e": "USB＝Universal Serial Bus，通用序列匯流排，以串列方式傳輸，可串接多種週邊設備。"}, {"id": "n3e-17", "n": 17, "q": "HDMI的英文全名為何？", "o": ["High Digital Memory Input", "High-Definition Multimedia Interface", "Hard Disk Media Interface", "Home Display Monitor Input"], "a": 1, "e": "HDMI＝High-Definition Multimedia Interface，高畫質多媒體介面，可同時傳輸影像與聲音。"}, {"id": "n3e-18", "n": 18, "q": "掃描器常搭配的OCR軟體，其英文全名為何？", "o": ["Optical Character Recognition", "Online Copy Reader", "Output Character Register", "Optical Color Resolution"], "a": 0, "e": "OCR＝Optical Character Recognition，光學字元辨識，可把影像中的文字辨識成可編修的文字檔。"}, {"id": "n3e-19", "n": 19, "q": "OLED顯示器中的「O」代表什麼？", "o": ["Optical，光學", "Output，輸出", "Organic，有機", "Original，原始"], "a": 2, "e": "OLED＝Organic Light-Emitting Diode，有機發光二極體，可自行發光、不需背光模組。"}, {"id": "n3e-20", "n": 20, "q": "下列英文縮寫與中文的配對，何者錯誤？", "o": ["NAS：網路附接儲存器", "RAID：磁碟陣列", "SAS：序列式SCSI", "SATA：固態硬碟"], "a": 3, "e": "SATA是硬碟常用的傳輸介面（第3代約6Gbps）；固態硬碟是SSD。"}, {"id": "n3e-21", "n": 21, "q": "歐盟的RoHS環保認證，主要規範的是什麼？", "o": ["無線網路的傳輸速度", "限用或禁用鉛、汞、鎘等有害化學物質", "顯示器的解析度與亮度", "硬碟的傳輸介面"], "a": 1, "e": "RoHS（危害性物質限制指令）規範製造商限用鉛、汞、鎘等有害物質；美國的EPEAT則是電子產品環境影響評價制度。"}, {"id": "n3e-22", "n": 22, "q": "下列CPU暫存器的英文縮寫與用途配對，何者正確？", "o": ["PC：存放運算的結果", "ACC：存放下一個要執行的指令位址", "IR：暫存正在執行中的指令", "FR：存放指令在主記憶體中的位址"], "a": 2, "e": "PC（程式計數器）存放下一個指令位址；ACC（累加器）存放運算結果；IR（指令暫存器）暫存執行中的指令；FR（旗標暫存器）存放執行後的狀態。"}, {"id": "n3e-23", "n": 23, "q": "印刷四原色CMYK中的「Y」，其英文原文與中文為何？", "o": ["Yellow-green，黃綠色", "Ivory，象牙白", "Yellow，黃色", "Yolk，蛋黃色"], "a": 2, "e": "Y是Yellow（黃色）。CMYK＝Cyan（青）、Magenta（洋紅）、Yellow（黃）、blacK（黑）。"}, {"id": "n3e-24", "n": 24, "q": "下列印刷四原色CMYK的英文原文對應，何者完全正確？", "o": ["C：Crimson、M：Magenta、Y：Yellow、K：blacK", "C：Cyan、M：Maroon、Y：Yellow、K：blacK", "C：Cyan、M：Magenta、Y：Yolk、K：Khaki", "C：Cyan、M：Magenta、Y：Yellow、K：blacK"], "a": 3, "e": "C＝Cyan（青）、M＝Magenta（洋紅）、Y＝Yellow（黃）、K＝blacK（黑）。"}, {"id": "n3e-25", "n": 25, "q": "下列哪一種顏色「不是」彩色噴墨印表機印刷四原色CMYK的其中一色？", "o": ["青色", "藍色", "洋紅色", "黃色"], "a": 1, "e": "CMYK為青、洋紅、黃、黑；藍色（Blue）是光的三原色RGB之一。"}, {"id": "n3e-26", "n": 26, "q": "下列有關資訊產品環保認證的敘述，何者正確？", "o": ["RoHS是美國制定的電子產品環境影響評價制度", "EPEAT是美國的電子產品環境影響評價制度，規範電子產品須符合環保標準", "RoHS鼓勵製造商使用鉛、汞、鎘等材料", "EPEAT是一種硬碟的傳輸介面規格"], "a": 1, "e": "RoHS是歐盟的危害性物質限制指令，限用或禁用鉛、汞、鎘等有害物質；EPEAT是美國的電子產品環境影響評價制度。"}, {"id": "n3e-27", "n": 27, "q": "為響應環保、愛護地球，購買電腦零組件時，應優先選購標示有下列哪一種標章的產品？", "o": ["HDMI", "SATA", "OTG", "RoHS"], "a": 3, "e": "RoHS、EPEAT都是資訊產品的環保認證；HDMI、SATA是傳輸介面，OTG是USB的補充標準。"}, {"id": "n3e-28", "n": 28, "q": "歐盟環保認證RoHS的英文全名與中文為何？", "o": ["Recycle of Hardware Systems，硬體回收系統", "Rules of Home Safety，居家安全規則", "Restriction of Hazardous Substances，危害性物質限制指令", "Reduction of Heat and Smoke，減少廢熱與廢煙"], "a": 2, "e": "RoHS＝Restriction of Hazardous Substances，危害性物質限制指令。"}]}, {"id": "n3d", "title": "進階－設備分類", "desc": "揮發性記憶體・輸入輸出設備・顯示器・單晶片電腦", "qs": [{"id": "n3d-1", "n": 1, "q": "下列記憶體中，屬於「揮發性記憶體」的共有幾項？ a.SRAM b.EEPROM c.DDR4記憶體 d.暫存器 e.快閃記憶體 f.L2快取記憶體", "o": ["2項", "3項", "4項", "5項"], "a": 2, "e": "斷電資料會消失的是SRAM、DDR4（屬於DRAM）、暫存器、L2快取（以SRAM製作），共4項；EEPROM、快閃記憶體屬非揮發性。"}, {"id": "n3d-2", "n": 2, "q": "下列哪一種記憶體屬於非揮發性記憶體？", "o": ["EPROM", "SRAM", "DRAM", "快取記憶體"], "a": 0, "e": "ROM類（PROM、EPROM、EEPROM、快閃記憶體）斷電資料不消失；RAM類（SRAM、DRAM）與快取記憶體斷電資料會消失。"}, {"id": "n3d-3", "n": 3, "q": "電腦突然停電時，下列哪一個裝置中的資料會消失？", "o": ["隨身碟", "固態硬碟", "DDR5記憶體", "藍光光碟"], "a": 2, "e": "DDR5是DRAM，屬於揮發性記憶體；隨身碟、SSD（快閃記憶體）與光碟都是非揮發性。"}, {"id": "n3d-4", "n": 4, "q": "下列哪一組記憶或儲存裝置，「全部」都屬於非揮發性？", "o": ["DRAM、ROM、硬碟", "SRAM、SSD、光碟", "暫存器、隨身碟、記憶卡", "ROM、快閃記憶體、硬碟"], "a": 3, "e": "DRAM、SRAM、暫存器斷電資料會消失；ROM、快閃記憶體、硬碟、SSD、光碟、隨身碟都會保存資料。"}, {"id": "n3d-5", "n": 5, "q": "下列設備中，屬於「輸入設備」的有幾項？ 指紋辨識器、觸控筆、投影機、喇叭、條碼掃描器、麥克風", "o": ["3項", "4項", "5項", "2項"], "a": 1, "e": "輸入設備為指紋辨識器、觸控筆、條碼掃描器、麥克風，共4項；投影機、喇叭是輸出設備。"}, {"id": "n3d-6", "n": 6, "q": "工程公司使用「繪圖機（plotter）」在大張紙上印出工程設計圖，繪圖機屬於下列何者？", "o": ["輸入設備", "記憶設備", "處理設備", "輸出設備"], "a": 3, "e": "繪圖機把電腦中的圖形輸出到紙上，屬輸出設備；注意「繪圖板」是用筆在板上畫，屬輸入設備。"}, {"id": "n3d-7", "n": 7, "q": "設計師用感壓筆在「繪圖板」上作畫，畫面同步出現在電腦中，繪圖板屬於下列何者？", "o": ["輸入設備", "輸出設備", "輸出媒體", "記憶設備"], "a": 0, "e": "繪圖板把手繪的筆跡輸入電腦，屬輸入設備。"}, {"id": "n3d-8", "n": 8, "q": "教室裡可用手指點選、又能顯示畫面的「觸控式互動電子白板」，屬於下列何者？", "o": ["只有輸入功能的設備", "只有輸出功能的設備", "兼具輸入與輸出功能的設備", "記憶設備"], "a": 2, "e": "觸控螢幕類設備可顯示畫面（輸出），也能用手觸控操作（輸入），兼具輸入與輸出功能。"}, {"id": "n3d-9", "n": 9, "q": "下列哪一項屬於輸出設備？", "o": ["網路攝影機", "晶片讀卡機", "3D印表機", "麥克風"], "a": 2, "e": "3D印表機把電腦中的模型輸出成實體，屬輸出設備；其餘為輸入設備。"}, {"id": "n3d-10", "n": 10, "q": "下列哪一組設備「全部」都屬於輸出設備？", "o": ["喇叭、麥克風、印表機", "螢幕、喇叭、繪圖機", "投影機、掃描器、耳機", "印表機、繪圖板、螢幕"], "a": 1, "e": "麥克風、掃描器、繪圖板是輸入設備；螢幕、喇叭、繪圖機、投影機、耳機、印表機是輸出設備。"}, {"id": "n3d-11", "n": 11, "q": "在超商用感應器讀取悠遊卡扣款，其中「感應器（讀卡機）」屬於下列何者？", "o": ["輸入媒體", "輸出設備", "輸出媒體", "輸入設備"], "a": 3, "e": "讀卡機讀取資料到電腦，屬輸入設備；悠遊卡是儲存資料的介質，屬輸入媒體。"}, {"id": "n3d-12", "n": 12, "q": "輸入單元與輸出單元合稱為「週邊設備」，下列何者通常「不」屬於週邊設備？", "o": ["喇叭", "掃描器", "CPU", "印表機"], "a": 2, "e": "CPU是主機內負責運算的核心元件，不是週邊設備；喇叭、印表機（輸出）與掃描器（輸入）都是週邊設備。"}, {"id": "n3d-13", "n": 13, "q": "8K顯示器常見的解析度為下列何者？", "o": ["3,840×2,160", "7,680×4,320", "15,360×8,640", "1,920×1,080"], "a": 1, "e": "Full HD為1,920×1,080；4K為3,840×2,160；8K為7,680×4,320（水平像素接近8,000）。"}, {"id": "n3d-14", "n": 14, "q": "顯示器規格中的「4K」，指的是什麼？", "o": ["垂直像素接近4,000", "畫面總共約有4,000個像素", "螢幕尺寸約為40吋", "水平像素接近4,000"], "a": 3, "e": "4K指水平像素接近4,000（3,840）；8K指水平像素接近8,000（7,680）。"}, {"id": "n3d-15", "n": 15, "q": "下列有關OLED顯示器特性的敘述，何者錯誤？", "o": ["需要背光模組來提供光源", "具有超廣角的特性", "耗電量低", "可以製成可捲曲的螢幕"], "a": 0, "e": "OLED（有機發光二極體）可自行發光，不需背光模組，所以比液晶顯示器輕薄，並具有超廣角、耗電量低、可捲曲等特性。"}, {"id": "n3d-16", "n": 16, "q": "下列有關各種顯示器的敘述，何者正確？", "o": ["LCD可以自行發光，不需要背光模組", "QLED是把量子點加在液晶顯示器背光源的上緣，使色彩更鮮艷", "OLED須透過液晶才能呈現影像", "Micro LED需要背光模組才能發光"], "a": 1, "e": "LCD靠背光模組的光源透過液晶呈現影像；OLED與Micro LED都能自行發光、不需背光模組；QLED是在液晶顯示器背光源上緣加入量子點。"}, {"id": "n3d-17", "n": 17, "q": "由英國樹莓派基金會研發、2012年推出，以Linux作業系統為基礎，接上螢幕與鍵盤後就能像個人電腦一樣看影片、瀏覽網頁的單晶片電腦是？", "o": ["Arduino", "Raspberry Pi", "micro:Bit", "NAS"], "a": 1, "e": "Raspberry Pi（樹莓派）由英國樹莓派基金會研發，功能如同一台個人電腦。"}, {"id": "n3d-18", "n": 18, "q": "某款單晶片電腦的軟硬體都開放原始碼，可在電路控制板上連接紅外線、超音波、伺服馬達等感測器與元件，並使用C語言設計程式。這款單晶片電腦是？", "o": ["Arduino", "Raspberry Pi", "micro:Bit", "RAID"], "a": 0, "e": "Arduino由米蘭互動設計學院教授設計，軟硬體皆開放原始碼，可連接各式感測器與電子元件。"}, {"id": "n3d-19", "n": 19, "q": "由英國廣播公司（BBC）與微軟等公司合作推出，內嵌LED燈、控制按鈕與感測器，免費提供給100萬名英國兒童、希望程式教育從兒童開始的單晶片電腦是？", "o": ["Raspberry Pi", "Arduino", "Thunderbolt", "micro:Bit"], "a": 3, "e": "micro:Bit是BBC與微軟等公司合作推出的單晶片電腦，目的是讓程式設計教育從兒童開始。"}, {"id": "n3d-20", "n": 20, "q": "下列有關單晶片電腦的敘述，何者錯誤？", "o": ["可以結合居家電器，透過無線網路打造智慧居家環境", "可以作為電腦教學的工具", "Raspberry Pi只能控制電器，無法連接螢幕與鍵盤使用", "Arduino可連接各式各樣的感測器與電子元件"], "a": 2, "e": "Raspberry Pi連接螢幕、鍵盤後就能像個人電腦一樣使用；單晶片電腦可用於智慧家電控制，也可作為電腦教學工具。"}]}];
+const HIST = [{"y": 110, "n": 27, "q": "下列關於CPU中「程式計數器(Program Counter, PC)」的敘述，何者正確？", "img": [], "o": ["PC是一個快取記憶體，用來暫時存放指令執行的資料", "PC是一個時間計數器，存放目前CPU運作的時間", "PC用來記錄程式運作的總數，用以調整匯流排的速度", "PC用來暫存下一個要執行指令的位址"], "a": 3, "e": "程式計數器（PC）是CPU內的暫存器，存放下一個要執行的指令位址。（課本3-3 表3-2 常見的暫存器）"}, {"y": 112, "n": 28, "q": "關於個人電腦CPU的敘述，下列何者正確？", "img": [], "o": ["指令暫存器可用來存放下一個要執行的指令位址", "多核心CPU比單核心CPU較易支援平行處理", "快取記憶體通常分L1、L2、L3，其中L2、L3內建於CPU之中", "CPU的運作中一個機器週期包括擷取、編碼、執行、儲存四個主要步驟"], "a": 1, "e": "存放下一個指令位址的是程式計數器；新的CPU把L1、L2、L3都內建在CPU中；機器週期是擷取、「解碼」、執行、儲存。（課本3-3）"}, {"y": 113, "n": 28, "q": "有關固態硬碟(solid state disk, SSD)與傳統機械硬碟(hard disk, HDD)的敘述，下列何者正確？", "img": [], "o": ["HDD中的儲存元件是採用快閃記憶體", "SSD採用低噪音馬達驅動讀寫頭並具抗震特點", "HDD沒有旋轉及搜尋資料時間，僅須考量資料傳輸時間", "SSD在經過長時間及多次使用致使內部儲存資料零散，仍可不須進行磁碟重組"], "a": 3, "e": "HDD以金屬磁盤儲存資料；SSD以快閃記憶體儲存，沒有馬達與讀寫頭；HDD存取時間包含搜尋、旋轉與傳輸時間；SSD沒有機械構造，不須磁碟重組。（課本3-4.2）"}, {"y": 114, "n": 27, "q": "關於資訊產品的規格敘述，下列何者正確？", "img": [], "o": ["記憶體的容量是16GB", "CPU的時脈頻率是4Gbps", "硬碟的傳輸頻寬是7200RPM", "網路卡的傳輸速率是100Mpps"], "a": 0, "e": "CPU時脈頻率單位為GHz；7200RPM是傳統硬碟的轉速；網路卡傳輸速率單位為Mbps。（課本3-3、3-4）"}, {"y": 115, "n": 28, "q": "一般個人電腦在預設狀態下，下列何項敘述是屬於串列傳輸且全雙工通訊？", "img": [], "o": ["鍵盤連接PS/2埠", "電腦經VGA線連接到螢幕", "筆電透過HDMI傳送簡報畫面到投影機", "主機板上網卡連接交換器進行同時傳送與接收資料"], "a": 3, "e": "網路卡以RJ-45連接交換器，採串列傳輸且可同時收送資料（全雙工）；VGA、HDMI是單向傳送畫面。（課本3-2.3連接埠，搭配第4章網路）"}, {"y": 115, "n": 30, "q": "李同學家裡電腦中的主機板簡圖如附圖所示。李同學想要將電腦升級成一台AI主機，於是先增購一條DRAM記憶體及一張PCI-Ex16獨立顯示卡，接下來新購的記憶體與顯示卡應該分別被安裝在下列何選項的插槽上？", "img": ["115主機板簡圖.png"], "o": ["甲、乙", "甲、丁", "乙、丁", "乙、戊"], "a": 2, "e": "記憶體插在乙、顯示卡插在丁。圖中各插槽：\n甲：CPU插槽（方形底座，安裝CPU）。\n乙：記憶體插槽（4條成排的長插槽，安插DRAM記憶體）。\n丙：電源插槽（多針腳的長方形插座，連接電源供應器的排線）。\n丁：PCI-E x16插槽（最長、尾端有卡榫的擴充插槽，安插獨立顯示卡）。\n戊：PCI擴充插槽（較舊的傳統PCI規格，可插網路卡、音效卡等擴充卡，不適合插PCI-E x16顯示卡）。PCI-E是Intel為強化PCI介面所提出的規格，傳輸速度比PCI快。\n（課本3-2.2 圖3-3主機板）"}, {"y": 115, "n": 31, "q": "承115-30題附圖，關於丙插槽的敘述，下列何者正確？", "img": ["115主機板簡圖.png"], "o": ["可連接硬碟機或光碟機", "這個插槽沒有防呆裝置", "用來連接電源供應器的排線", "可連接機殼上的電源開關、燈號、多個USB插槽"], "a": 2, "e": "丙是電源插槽，用來連接電源供應器的排線，具有防呆設計。（課本3-2.2 電源插槽）"}];   // 歷年統測原題（只顯示，不列入練習）
+const IMGS = {"115主機板簡圖.png": "data:image/png;base64,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"};   // 歷年考題附圖（檔名 → data URI）
+const SRC = Object.fromEntries(BANK.map(s=>[s.id,s]));
+const ALLQ = {}; BANK.forEach(s=>s.qs.forEach(q=>{q.src=s.id; ALLQ[q.id]=q;}));
+
+// ---------- storage (safe) ----------
+const store = {
+  get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+};
+const mem = {}; // fallback when storage blocked
+function load(k,d){const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:d):v;}
+function save(k,v){mem[k]=v;store.set(k,v);}
+
+function todayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+// day2：今日答對＝「今天答對過的不同題目數」，同一題一天只算一次；log 留下每次作答紀錄供老師查核
+function getDay(){const k=todayKey();const d=load('day2',null);
+  if(!d||d.date!==k)return{date:k,correct:0,answered:0,rounds:[],seen:{},log:[],fast:0};
+  d.seen=d.seen||{};d.log=d.log||[];d.fast=d.fast||0;return d;}
+function setDay(d){if(d.log.length>600)d.log=d.log.slice(-600);save('day2',d);renderTally();}
+const FAST_MS=2000;     // 少於 2 秒就作答 → 標記為「快速作答」
+const LOCK_MS=600;      // 題目出現後 0.6 秒內的點擊/按鍵不受理（防連點、按住按鍵連發）
+const NEXT_LOCK_MS=500; // 作答後 0.5 秒內不能跳下一題
+function getWrong(){return load('wrong',{});}
+function setWrong(w){save('wrong',w);}
+
+// ---------- utils ----------
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const L='ABCD';
+
+// ---------- levels (以今日答對題數計算) ----------
+const LEVELS=[[0,'位元新手'],[10,'位元組學徒'],[25,'暫存器見習生'],[45,'快取命中手'],[70,'主記憶體守護者'],[100,'匯流排騎士'],[140,'多核心大師'],[190,'超頻達人'],[250,'晶片傳說']];
+function levelOf(n){let i=0;while(i+1<LEVELS.length&&n>=LEVELS[i+1][0])i++;
+  const cur=LEVELS[i][0],nxt=LEVELS[i+1]?LEVELS[i+1][0]:null;
+  return {lv:i+1,title:LEVELS[i][1],need:nxt===null?0:nxt-n,pct:nxt===null?100:Math.round((n-cur)/(nxt-cur)*100),nextTitle:LEVELS[i+1]?LEVELS[i+1][1]:null};}
+
+// ---------- effects: sound / confetti / popups ----------
+const reduceMotion=(()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){return false;}})();
+let muted=load('muted',false);let actx=null;
+function tone(freqs,dur,type,gap,vol){
+  if(muted)return;
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();
+    const t0=actx.currentTime+0.01;
+    freqs.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type=type;o.frequency.value=f;
+      const st=t0+i*gap;g.gain.setValueAtTime(0.0001,st);g.gain.exponentialRampToValueAtTime(vol,st+0.015);g.gain.exponentialRampToValueAtTime(0.0001,st+dur);
+      o.connect(g);g.connect(actx.destination);o.start(st);o.stop(st+dur+0.03);});
+  }catch(e){}
+}
+const sfx={
+  ok:c=>{const k=Math.pow(1.0595,Math.min(c-1,12));tone((c>=5?[523,659,784,1047]:[523,659,784]).map(f=>f*k),.2,'triangle',.07,.16);},
+  bad:()=>tone([220,165],.25,'square',.13,.05),
+  lvl:()=>tone([523,659,784,1047,784,1047,1319],.22,'triangle',.08,.16),
+  win:()=>tone([392,523,659,784,659,784,1047],.3,'triangle',.11,.16)
+};
+function renderMute(){const b=$('#muteBtn');b.setAttribute('aria-pressed',String(!muted));b.textContent=muted?'音效 關':'音效 開';}
+$('#muteBtn').onclick=()=>{muted=!muted;save('muted',muted);renderMute();if(!muted)tone([784,1047],.12,'triangle',.06,.12);};
+
+const cv=$('#fx');const cx=cv.getContext('2d');let parts=[];let raf=0;
+function sizeCv(){const r=window.devicePixelRatio||1;cv.width=innerWidth*r;cv.height=innerHeight*r;cx.setTransform(r,0,0,r,0,0);}
+addEventListener('resize',sizeCv);sizeCv();
+const FXC=['#0f6a73','#4fb8bf','#e0a21b','#e8613c','#3fae63','#7a5cf0','#ff5c8a'];
+function addPart(x,y,vx,vy){parts.push({x,y,vx,vy,r:3+Math.random()*4,c:FXC[Math.floor(Math.random()*FXC.length)],rot:Math.random()*6,vr:(Math.random()-.5)*.35,life:1,sq:Math.random()<.6});}
+function burst(x,y,n,power){if(reduceMotion)return;for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=power*(.35+Math.random()*.8);addPart(x,y,Math.cos(a)*s,Math.sin(a)*s-power*.5);}run();}
+function rain(n){if(reduceMotion)return;for(let i=0;i<n;i++)addPart(Math.random()*innerWidth,-20-Math.random()*innerHeight*.6,(Math.random()-.5)*2,2+Math.random()*3);run();}
+function run(){if(!raf)raf=requestAnimationFrame(tick);}
+function tick(){
+  cx.clearRect(0,0,innerWidth,innerHeight);
+  for(const p of parts){p.vy+=.22;p.vx*=.985;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.life-=.007;
+    cx.save();cx.globalAlpha=Math.max(0,Math.min(1,p.life*2));cx.translate(p.x,p.y);cx.rotate(p.rot);cx.fillStyle=p.c;
+    if(p.sq)cx.fillRect(-p.r,-p.r/2,p.r*2,p.r);else{cx.beginPath();cx.arc(0,0,p.r*.7,0,7);cx.fill();}cx.restore();}
+  parts=parts.filter(p=>p.life>0&&p.y<innerHeight+40);
+  raf=parts.length?requestAnimationFrame(tick):0;
+}
+function center(el){const r=el.getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2];}
+function flyPlus(el){
+  const [x,y]=center(el);const [tx,ty]=center($('#tally'));
+  const p=document.createElement('div');p.className='plus';p.textContent='+1';p.style.left=x+'px';p.style.top=(y-20)+'px';document.body.appendChild(p);
+  if(reduceMotion||!p.animate){setTimeout(()=>p.remove(),400);return;}
+  p.animate([{transform:'translate(-50%,0) scale(1.3)',opacity:1},{transform:'translate(-50%,-30px) scale(1.5)',opacity:1,offset:.3},{transform:`translate(calc(-50% + ${tx-x}px),${ty-y+20}px) scale(.6)`,opacity:.3}],{duration:800,easing:'cubic-bezier(.5,0,.6,1)'}).onfinish=()=>{p.remove();renderTally(true);};
+}
+function popText(main,sub,kind){const p=$('#pop');p.innerHTML=`<b>${esc(main)}</b>${sub?`<span>${esc(sub)}</span>`:''}`;p.className='pop';void p.offsetWidth;p.className='pop show '+(kind||'');}
+const PRAISE=['答對了！','好厲害！','快取命中！','零延遲！','CPU 全速運轉！','腦袋超頻中！','正確無誤！','滿分手感！','邏輯滿點！','記憶體寫入成功！'];
+const pickOne=a=>a[Math.floor(Math.random()*a.length)];
+
+// ---------- header ----------
+function renderTally(bump){
+  const d=getDay();
+  $('#tallyNum').textContent=d.correct;$('#tallyLv').textContent='Lv.'+levelOf(d.correct).lv;
+  const [y,m,dd]=d.date.split('-');$('#tallyDate').textContent=(+m)+'/'+(+dd);
+  if(bump){const t=$('#tally');t.classList.remove('bump');void t.offsetWidth;t.classList.add('bump');}
+}
+$('#stuName').value=load('name','');
+$('#stuName').addEventListener('input',e=>save('name',e.target.value));
+$('#tally').onclick=()=>{
+  const d=getDay();const nm=$('#stuName').value.trim();
+  $('#dayTitle').textContent=(nm?nm+' · ':'')+d.date;
+  $('#dayNum').textContent=d.correct;
+  const rate=d.answered?Math.round(d.correct/d.answered*100):0;
+  $('#dayStats').innerHTML=`<div class="stat"><div class="v">${d.answered}</div><div class="l">今日作答次數</div></div>
+    <div class="stat"><div class="v">${d.rounds.length}</div><div class="l">完成回合</div></div>
+    <div class="stat"><div class="v">${rate}%</div><div class="l">答對率</div></div>
+    <div class="stat"><div class="v" style="color:${d.fast?'var(--bad)':'inherit'}">${d.fast}</div><div class="l">2 秒內快速作答</div></div>`;
+  const rounds=d.rounds.length?d.rounds.map(r=>`<div><span>${esc(r.time)}　${esc(r.label)}</span><span>${r.score} 分</span></div>`).join(''):'<div><span>今天還沒有完成的回合</span><span></span></div>';
+  const logs=d.log.slice(-200).reverse().map(x=>{const q=ALLQ[x.id];
+    return `<div style="${x.ms<FAST_MS?'color:var(--bad)':''}"><span>${esc(x.t)}　${q?esc(SRC[q.src].title.replace('第三章 ',''))+' 第'+q.n+'題':''}　${x.ok?'對':'錯'}${x.c?' ＋1':''}</span><span>${(x.ms/1000).toFixed(1)} 秒</span></div>`;}).join('');
+  $('#dayLog').innerHTML=`<b>完成回合</b>${rounds}<b style="margin-top:6px">作答紀錄（最新在上，紅色＝2 秒內作答；＋1＝計入今日答對）</b>${logs||'<div><span>尚無作答</span><span></span></div>'}`;
+  $('#dayModal').hidden=false;$('#dayClose').focus();
+};
+$('#dayClose').onclick=()=>{$('#dayModal').hidden=true;};
+$('#dayModal').addEventListener('click',e=>{if(e.target.id==='dayModal')$('#dayModal').hidden=true;});
+function guardLeave(go){if(state.quiz&&!state.quiz.done&&!state.confirmLeave){state.confirmLeave=true;renderQuiz();return;}go();}
+$('#homeBtn').onclick=()=>guardLeave(home);
+$('#histBtn').onclick=()=>guardLeave(()=>{state.hist={year:'all',open:{},all:false};histView();window.scrollTo(0,0);});
+
+// ---------- state ----------
+const state={src:'all',quiz:null,showWrong:false,confirmClear:false,confirmLeave:false,hist:null};
+const ALL_LABEL='全部練習';
+// 線上版（嵌在 claude.ai 頁框內）無法開啟列印視窗，只有離線版顯示列印按鈕
+const CAN_PRINT=(()=>{try{return window.self===window.top;}catch(e){return false;}})();
+
+function poolFor(src){return src==='all'?BANK.flatMap(s=>s.qs):SRC[src].qs;}
+// 「進階」開頭、但不是統測改編的單元＝自編補充題，也會列在「歷年考題」頁
+const isSupp=s=>/^進階/.test(s.title)&&!/統測/.test(s.title);
+
+// ---------- home ----------
+function home(){
+  state.quiz=null;state.confirmLeave=false;state.hist=null;
+  const srcs=[...BANK.map(s=>({id:s.id,label:s.title,sub:(s.desc?s.desc+' · ':'')+s.qs.length+' 題'})),{id:'all',label:ALL_LABEL,sub:'以上全部單元，共 '+BANK.reduce((a,s)=>a+s.qs.length,0)+' 題'}];
+  if(!srcs.some(s=>s.id===state.src))state.src='all';
+  const wrong=getWrong();const wids=Object.keys(wrong).filter(id=>ALLQ[id]);
+  const dd=getDay();const lv=levelOf(dd.correct);
+  $('#app').innerHTML=`
+  <section class="panel">
+    <div class="sec-label">今日等級 · 答對越多升得越高</div>
+    <div class="lvcard">
+      <div class="lvbadge" style="--p:${lv.pct}"><b><small>LV</small>${lv.lv}</b></div>
+      <div class="lvmeta"><div class="t">${esc(lv.title)}</div>
+        <p class="hint" style="margin:0">今日答對以「不同題目」計算，同一題一天只算一次。</p>
+        <p>${lv.nextTitle?`今天已答對 ${dd.correct} 題，再答對 <b>${lv.need}</b> 題升到 Lv.${lv.lv+1}「${esc(lv.nextTitle)}」`:`今天已答對 ${dd.correct} 題，已經是最高等級！`}</p>
+        <div class="ladder">${LEVELS.map((l,i)=>`<i class="${i<lv.lv?'on':''}" title="Lv.${i+1} ${esc(l[1])}"></i>`).join('')}</div>
+      </div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="sec-label">選擇練習範圍</div>
+    <div class="choices" id="srcList">${srcs.map(s=>`<button class="chip" data-src="${s.id}" aria-pressed="${s.id===state.src}"><b>${esc(s.label)}</b><span>${esc(s.sub)}</span></button>`).join('')}</div>
+    <div class="row"><button class="btn primary big" id="startBtn">開始練習</button>
+    <span class="hint">題目與選項都會隨機排列；答錯會看到題解，並在稍後再出一次，全部答對才算完成。</span></div>
+  </section>
+  ${HIST.length?`<section class="panel">
+    <div class="sec-label">歷年統測 · 第三章硬體考題</div>
+    <div class="histcard">
+      <div class="meta"><b>${HIST.length} 題統測原題＋${BANK.filter(isSupp).reduce((a,s)=>a+s.qs.length,0)} 題補充題，附答案</b><p>${[...new Set(HIST.map(h=>h.y))].join('、')} 學年統測第 26–50 題中與硬體相關的題目，以及進階單元（計算題與匯流排、英文縮寫、設備分類）的補充題。可先遮住答案讓全班作答，再逐題揭曉。</p></div>
+      <button class="btn" id="histBtn2">查看歷年考題</button>
+    </div>
+  </section>`:''}
+  <section class="panel">
+    <div class="sec-label">個人錯題本</div>
+    <div class="wrongcard">
+      <div class="count">${wids.length}</div>
+      <div class="meta"><b>題待複習</b><p>${wids.length?'在錯題複習中一次就答對，該題就會從錯題本移除。':'目前沒有錯題，繼續保持！'}</p></div>
+      <button class="btn primary" id="wrongBtn" ${wids.length?'':'disabled'}>複習錯題</button>
+    </div>
+    ${wids.length?`<div class="row"><button class="linkbtn" id="toggleW">${state.showWrong?'收合錯題清單':'查看錯題清單'}</button>
+      ${state.confirmClear?`<span class="hint">確定清空全部錯題？</span><button class="linkbtn danger" id="clearYes">確定清空</button><button class="linkbtn" id="clearNo">取消</button>`:`<button class="linkbtn danger" id="clearW">清空錯題本</button>`}</div>`:''}
+    ${state.showWrong&&wids.length?`<div class="wlist">${wids.sort((a,b)=>wrong[b].times-wrong[a].times).map(id=>{const q=ALLQ[id];return `<div class="witem"><div class="src">${esc(SRC[q.src].title)} 第 ${q.n} 題 · <span class="times">錯 ${wrong[id].times} 次</span></div>${esc(q.q)}</div>`;}).join('')}</div>`:''}
+  </section>`;
+  document.querySelectorAll('[data-src]').forEach(b=>b.onclick=()=>{state.src=b.dataset.src;home();});
+  $('#startBtn').onclick=()=>startQuiz(poolFor(state.src).map(q=>q.id),state.src==='all'?ALL_LABEL:SRC[state.src].title,false);
+  const hb2=$('#histBtn2');if(hb2)hb2.onclick=()=>$('#histBtn').click();
+  const wb=$('#wrongBtn');if(wb)wb.onclick=()=>startQuiz(wids,'錯題複習',true);
+  const tw=$('#toggleW');if(tw)tw.onclick=()=>{state.showWrong=!state.showWrong;home();};
+  const cw=$('#clearW');if(cw)cw.onclick=()=>{state.confirmClear=true;home();};
+  const cy=$('#clearYes');if(cy)cy.onclick=()=>{setWrong({});state.confirmClear=false;home();};
+  const cn=$('#clearNo');if(cn)cn.onclick=()=>{state.confirmClear=false;home();};
+  window.scrollTo(0,0);
+}
+
+// ---------- 歷年考題（原題順序、原選項順序，答案可逐題或全部揭曉）----------
+function histView(){
+  const h=state.hist;state.quiz=null;
+  const years=[...new Set(HIST.map(x=>x.y))];
+  // 進階補充單元也列在這裡（題庫原本的選項順序）
+  const SUPP=BANK.filter(isSupp);
+  const supp=typeof h.year==='string'&&h.year.startsWith('u:')?SUPP.find(s=>'u:'+s.id===h.year):null;
+  const list=supp?supp.qs.map(q=>({tag:supp.title.replace(/^進階－/,''),y:supp.id,n:q.n,q:q.q,img:[],o:q.o,a:q.a,e:q.e}))
+                 :HIST.filter(x=>h.year==='all'||x.y===h.year).map(x=>({...x,tag:x.y+' 統測'}));
+  const key=x=>x.y+'-'+x.n;
+  const shown=x=>h.all||h.open[key(x)];
+  const tSrc=BANK.find(s=>/統測/.test(s.title));
+  $('#app').innerHTML=`
+  <section class="panel">
+    <div class="sec-label">${supp?'進階補充題 · '+esc(supp.title):'歷年統測 · 第三章硬體相關考題'}</div>
+    <h2>${list.length} 題${supp?'補充題':'原題'}與答案</h2>
+    <p class="hint" style="margin:0">${supp?'依課本內容與技高補充資料自編的練習題（計算、英文縮寫、匯流排、分類），這些題目也在練習題庫中。':`選自 ${years.join('、')} 學年統測（商管群專業一）第 26–50 題，保留原本的選項順序與答案。`}可以先隱藏答案讓學生作答，再逐題按「看答案」揭曉。</p>
+    <div class="ychips noprint">${['all',...years].map(y=>`<button class="chip" data-y="${y}" aria-pressed="${h.year===y}"><b>${y==='all'?'統測全部':y+' 統測'}</b></button>`).join('')}${SUPP.map(s=>`<button class="chip" data-y="u:${s.id}" aria-pressed="${h.year==='u:'+s.id}"><b>${esc(s.title)}（${s.qs.length}）</b></button>`).join('')}</div>
+    <div class="row noprint">
+      <button class="btn primary" id="hAll">${h.all?'隱藏全部答案':'顯示全部答案'}</button>
+      ${CAN_PRINT?'<button class="btn" id="hPrint">列印 / 存成 PDF</button>':''}
+      ${tSrc?`<button class="btn" id="hPractice">練習統測改編題（${tSrc.qs.length} 題）</button>`:''}
+      <span class="spacer"></span><button class="linkbtn" id="hHome">回首頁</button>
+    </div>
+  </section>
+  ${list.map(x=>{const k=key(x),s=shown(x);return `<article class="hq">
+    <div class="yr"><b>${esc(x.tag)}</b><span>第 ${x.n} 題</span><span class="spacer"></span>
+      <button class="linkbtn noprint" data-k="${k}">${s?'隱藏答案':'看答案'}</button></div>
+    <div class="qtext">${esc(x.q)}</div>
+    ${x.img.map(p=>IMGS[p]?`<img src="${IMGS[p]}" alt="${esc(p.replace(/\.\w+$/,''))}">`:'').join('')}
+    <div class="hopts">${x.o.map((o,i)=>`<div class="hopt ${s&&i===x.a?'right':''}"><span class="k">(${L[i]})</span><span>${esc(o)}</span></div>`).join('')}</div>
+    ${s?`<div class="hans"><b>答案：(${L[x.a]})</b>${x.e?`<p>${esc(x.e)}</p>`:''}</div>`:''}
+  </article>`;}).join('')}`;
+  document.querySelectorAll('[data-y]').forEach(b=>b.onclick=()=>{const v=b.dataset.y;h.year=(v==='all'||v.startsWith('u:'))?v:+v;h.open={};h.all=false;histView();});
+  document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;if(h.all){h.all=false;list.forEach(x=>h.open[key(x)]=true);}h.open[k]=!h.open[k];histView();});
+  $('#hAll').onclick=()=>{h.all=!h.all;h.open={};histView();};
+  const hpr=$('#hPrint');if(hpr)hpr.onclick=()=>window.print();
+  $('#hHome').onclick=home;
+  const hp=$('#hPractice');if(hp)hp.onclick=()=>startQuiz(tSrc.qs.map(q=>q.id),tSrc.title,false);
+}
+
+// ---------- quiz ----------
+function makeItem(id){
+  const order=shuffle([0,1,2,3]);
+  return {id,order,retry:false};
+}
+function startQuiz(ids,label,review){
+  state.quiz={label,review,total:ids.length,queue:shuffle(ids).map(makeItem),firstTry:{},cleared:new Set(),attempts:0,cur:null,answered:null,done:false,combo:0,maxCombo:0,anim:null};
+  next();
+}
+function next(){
+  const z=state.quiz;state.confirmLeave=false;
+  if(!z.queue.length){finish();return;}
+  z.cur=z.queue.shift();z.answered=null;z.anim='enter';z.shownAt=performance.now();renderQuiz();window.scrollTo(0,0);
+}
+function tryNext(){const z=state.quiz;if(!z||z.answered===null)return;if(performance.now()-z.answeredAt<NEXT_LOCK_MS)return;next();}
+function answer(pos){
+  const z=state.quiz;if(z.answered!==null)return;
+  const ms=performance.now()-z.shownAt;if(ms<LOCK_MS)return;
+  const it=z.cur;const q=ALLQ[it.id];const pick=it.order[pos];const ok=pick===q.a;
+  z.answered=pos;z.answeredAt=performance.now();z.attempts++;
+  const first=!(it.id in z.firstTry);
+  if(first)z.firstTry[it.id]=ok;
+  const d=getDay();const lvBefore=levelOf(d.correct).lv;d.answered++;
+  const counted=ok&&!d.seen[it.id];
+  if(counted){d.seen[it.id]=1;d.correct++;}
+  if(ms<FAST_MS)d.fast++;
+  const now=new Date();
+  d.log.push({t:[now.getHours(),now.getMinutes(),now.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':'),id:it.id,ok,c:counted?1:0,ms:Math.round(ms)});
+  setDay(d);
+  z.counted=counted;
+  const lvAfter=levelOf(d.correct);
+  if(ok){z.combo++;z.maxCombo=Math.max(z.maxCombo,z.combo);}else z.combo=0;
+  const w=getWrong();
+  if(ok){
+    z.cleared.add(it.id);
+    // 錯題複習：第一次就答對 → 移除；一般練習：第一次就答對且原本在錯題本 → 也移除
+    if(first&&w[it.id]){delete w[it.id];setWrong(w);z.removed=(z.removed||0)+1;}
+  }else{
+    w[it.id]={times:((w[it.id]&&w[it.id].times)||0)+1,last:todayKey()};setWrong(w);
+    // 再放回佇列：插在 3 題之後（若剩不多就放最後）
+    // 重新亂數選項，且正確答案一定換到不同位置（避免背 ABCD 位置）
+    let again;do{again={...makeItem(it.id),retry:true};}while(again.order.indexOf(q.a)===it.order.indexOf(q.a));
+    const at=Math.min(3,z.queue.length);z.queue.splice(at,0,again);
+  }
+  z.anim=ok?'ok':'bad';
+  renderQuiz();
+  // ---- 特效 ----
+  if(ok){
+    const el=document.querySelector('.opt.right');const [x,y]=center(el);
+    const c=z.combo;
+    burst(x,y,c>=10?110:c>=5?80:c>=3?55:35,c>=5?11:8);
+    if(counted)flyPlus(el);sfx.ok(c);
+    if(lvAfter.lv>lvBefore){
+      setTimeout(()=>{popText('升級！Lv.'+lvAfter.lv,lvAfter.title,'lvl');rain(180);sfx.lvl();},350);
+    }else if(c===3||c===5||c===10||(c>10&&c%5===0)){
+      popText(c+' 連擊！',c>=10?'超頻模式啟動':c>=5?'手感發燙中':'保持下去','combo3');
+      if(c>=5)rain(c>=10?160:90);
+    }else popText(pickOne(PRAISE),it.retry?'再挑戰成功':(counted?'':'這題今天已計分過'), '');
+  }else{
+    sfx.bad();
+  }
+}
+function renderQuiz(){
+  const z=state.quiz;const it=z.cur;const q=ALLQ[it.id];
+  const done=z.cleared.size;const pct=Math.round(done/z.total*100);
+  const ans=z.answered;const picked=ans===null?null:it.order[ans];const ok=picked===q.a;
+  const optsHtml=it.order.map((oi,pos)=>{
+    let cls='opt';
+    if(ans!==null){if(oi===q.a)cls+=' right';else if(pos===ans)cls+=' wrong';else cls+=' dim';
+      if(pos===ans&&(z.anim==='ok'||z.anim==='bad'))cls+=' boom';}
+    return `<button class="${cls}" data-pos="${pos}" ${ans!==null?'disabled':''}><span class="k">${L[pos]}</span><span>${esc(q.o[oi])}</span></button>`;
+  }).join('');
+  const rightPos=it.order.indexOf(q.a);
+  let fb='';
+  if(ans!==null){
+    fb=ok?`<div class="fb ok"><h3>答對了！${z.combo>=2?' 目前 '+z.combo+' 連擊':''}</h3><p>${esc(q.e)}</p></div>`
+        :`<div class="fb bad"><h3>差一點！正確答案是 (${L[rightPos]}) ${esc(q.o[q.a])}</h3><p><b>題解：</b>${esc(q.e)}</p><p class="note">看懂題解後，這題稍後會再出現一次，答對就過關。</p></div>`;
+  }
+  const anim=z.anim;z.anim=null;
+  const comboHtml=z.combo>=2?`<span class="combo ${z.combo>=3?'hot':''} ${anim==='ok'?'pump':''}">連擊 ×${z.combo}</span>`:'';
+  $('#app').innerHTML=`
+  <section class="panel ${anim==='enter'?'enter':anim==='bad'?'shake':''}">
+    <div class="qhead"><span>${esc(z.label)}${z.review?' · 錯題本':''}</span><span class="row" style="gap:10px">${comboHtml}<span>已過關 <b>${done}</b> / <b>${z.total}</b> · 剩 <b>${z.queue.length+(ans===null?1:0)}</b> 題</span></span></div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    ${it.retry?'<div class="row" style="gap:6px"><span class="tag retry">再挑戰</span></div>':''}
+    <div class="qtext">${esc(q.q)}</div>
+    <div class="opts">${optsHtml}</div>
+    ${fb}
+    <div class="row">
+      ${ans!==null?`<button class="btn primary big" id="nextBtn">${z.queue.length?'下一題':'看成績'}</button>`:''}
+      <span class="spacer"></span>
+      ${state.confirmLeave?`<span class="hint">結束後本回合不計分，確定？</span><button class="linkbtn danger" id="leaveYes">結束</button><button class="linkbtn" id="leaveNo">繼續作答</button>`:`<button class="linkbtn" id="leaveBtn">結束練習</button>`}
+    </div>
+    <div class="hint">鍵盤：按 1–4 或 A–D 作答，Enter 下一題</div>
+  </section>`;
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.pos));
+  const nb=$('#nextBtn');if(nb){nb.onclick=tryNext;nb.focus({preventScroll:true});}
+  const lb=$('#leaveBtn');if(lb)lb.onclick=()=>{state.confirmLeave=true;renderQuiz();};
+  const ly=$('#leaveYes');if(ly)ly.onclick=home;
+  const ln=$('#leaveNo');if(ln)ln.onclick=()=>{state.confirmLeave=false;renderQuiz();};
+}
+document.addEventListener('keydown',e=>{
+  if(!$('#dayModal').hidden){if(e.key==='Escape')$('#dayModal').hidden=true;return;}
+  const z=state.quiz;if(!z||z.done||e.target.tagName==='INPUT')return;
+  if(e.repeat){e.preventDefault();return;} // 按住按鍵的自動連發一律忽略
+  const k=e.key.toUpperCase();
+  if(z.answered===null){let p='1234'.indexOf(k);if(p<0)p=L.indexOf(k);if(p>=0&&k.length===1){e.preventDefault();answer(p);}}
+  else if(e.key==='Enter'||e.key===' '){e.preventDefault();tryNext();}
+});
+function finish(){
+  const z=state.quiz;z.done=true;
+  const ids=Object.keys(z.firstTry);const first=ids.filter(id=>z.firstTry[id]).length;
+  const missed=ids.filter(id=>!z.firstTry[id]);
+  // 一般練習：只算第一次就答對。錯題複習：第一次答對得滿分，再挑戰才答對得一半分。
+  const score=z.total?Math.round((z.review?(first+missed.length*0.5):first)/z.total*100):0;
+  const d=getDay();const t=new Date();
+  d.rounds.push({time:String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0'),label:z.label,score});setDay(d);
+  const remain=Object.keys(getWrong()).filter(id=>ALLQ[id]).length;
+  const stars=score>=100?3:score>=80?2:score>=60?1:0;
+  const grade=score>=100?'完美通關！全部一次答對':score>=80?'表現優秀！':score>=60?'順利過關，再接再厲！':'全部題目都已攻克，多練幾次分數會更高！';
+  $('#app').innerHTML=`
+  <section class="panel enter">
+    <div class="sec-label">本回合完成 · ${esc(z.label)}</div>
+    <div class="stars">${[0,1,2].map(i=>`<div class="star ${i<stars?'on':''}" style="animation-delay:${.3+i*.25}s"></div>`).join('')}</div>
+    <div class="score"><span class="n" id="scoreN">${score}</span><span class="u">分</span></div>
+    <div class="grade">${grade}</div>
+    <p style="margin:0;color:var(--muted)">${z.review?'錯題複習計分：第一次就答對得滿分，再挑戰才答對得一半分；':'分數以「第一次作答就答對」計算；'}所有題目最後都已答對過關。</p>
+    <div class="stats">
+      <div class="stat"><div class="v">${first} / ${z.total}</div><div class="l">一次就答對</div></div>
+      <div class="stat"><div class="v">${z.maxCombo}</div><div class="l">最高連擊</div></div>
+      <div class="stat"><div class="v">${missed.length}</div><div class="l">曾答錯的題目</div></div>
+      <div class="stat"><div class="v">${z.attempts}</div><div class="l">總作答次數</div></div>
+      ${z.review?`<div class="stat"><div class="v">${z.removed||0}</div><div class="l">移出錯題本</div></div>`:`<div class="stat"><div class="v">${remain}</div><div class="l">錯題本題數</div></div>`}
+    </div>
+    <div class="row">
+      <button class="btn primary" id="againBtn">再練一次</button>
+      ${remain?`<button class="btn" id="goWrong">複習錯題（${remain}）</button>`:''}
+      <button class="btn" id="goHome">回首頁</button>
+    </div>
+  </section>
+  ${missed.length?`<section class="panel"><div class="sec-label">這回合答錯過的題目</div><div class="wlist" style="max-height:none">${missed.map(id=>{const q=ALLQ[id];return `<div class="witem"><div class="src">${esc(SRC[q.src].title)} 第 ${q.n} 題</div><div>${esc(q.q)}</div><div style="margin-top:4px"><b style="color:var(--ok)">答案：${esc(q.o[q.a])}</b></div><div style="color:var(--muted);white-space:pre-line">${esc(q.e)}</div></div>`;}).join('')}</div></section>`:''}`;
+  const allIds=Object.keys(z.firstTry);const lbl=z.label,rv=z.review;
+  $('#againBtn').onclick=()=>{if(rv){const w=Object.keys(getWrong()).filter(id=>ALLQ[id]);if(!w.length){home();return;}startQuiz(w,'錯題複習',true);}else startQuiz(allIds,lbl,false);};
+  const gw=$('#goWrong');if(gw)gw.onclick=()=>startQuiz(Object.keys(getWrong()).filter(id=>ALLQ[id]),'錯題複習',true);
+  $('#goHome').onclick=home;
+  window.scrollTo(0,0);
+  // 分數跳動 + 慶祝
+  const sn=$('#scoreN');
+  if(!reduceMotion&&score>0){
+    sn.textContent='0';const t0=performance.now();
+    const step=t=>{const k=Math.max(0,Math.min(1,(t-t0)/900));sn.textContent=Math.round(score*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(step);};
+    requestAnimationFrame(step);
+    setTimeout(()=>{if(sn.isConnected)sn.textContent=score;},1300); // 動畫被暫停時也一定顯示最終分數
+  }
+  if(score>=60)sfx.win();
+  if(score>=80){setTimeout(()=>rain(score>=100?260:150),300);}
+  if(score>=100){const [x,y]=center(sn);setTimeout(()=>burst(x,y,120,13),900);}
+}
+
+renderMute();renderTally();home();
+</script>
