@@ -407,7 +407,7 @@ function home(){
   <section class="panel pink">
     <div class="sec-label">模擬考 · 50 題 · 滿分 100</div>
     <div class="histcard">
-      <div class="meta"><b>從全部 ${BANK.reduce((a,s)=>a+s.qs.length,0)} 題隨機抽 50 題，每題 2 分</b><p>作答中不顯示對錯，可以跳題、改答案，交卷後才公布成績與詳解。成績單為粉紅色，方便老師登記。</p></div>
+      <div class="meta"><b>從全部 ${BANK.reduce((a,s)=>a+s.qs.length,0)} 題隨機抽 50 題，每題 2 分</b><p>作答中不顯示對錯，可以跳題、改答案，交卷後才公布成績與詳解。</p></div>
       <button class="btn pinkbtn" id="examBtn2">開始模擬考</button>
     </div>
     ${examRecs().length?`<div class="exrec"><b>本機模擬考紀錄（最新 5 筆）</b>${examRecs().slice(-5).reverse().map(r=>`<div><span>${esc(r.d)} ${esc(r.t)}　${esc(r.name)}</span><span>${r.score} 分</span></div>`).join('')}</div>`:''}
@@ -664,7 +664,7 @@ function examIntro(){
     <h2>準備開始</h2>
     <p style="margin:0">從全部 ${total} 題中隨機抽出 ${EXAM_N} 題，每題 2 分。作答時不會顯示對錯，可以用下方題號跳題、修改答案；全部作答完按「交卷」，才會公布成績與詳解。</p>
     <div class="row"><label class="who" for="exName" style="color:var(--ink)">姓名／座號 <input id="exName" maxlength="20" placeholder="例：12 王小明" value="${esc(nm)}" style="width:12em"></label></div>
-    <p class="hint" id="exNameHint" style="margin:0">成績單會顯示姓名座號，方便老師登記，請務必填寫。</p>
+    <p class="hint" id="exNameHint" style="margin:0">成績單會顯示姓名座號，請務必填寫。</p>
     <div class="row"><button class="btn primary big" id="exStart">開始作答</button><span class="spacer"></span><button class="linkbtn" id="exBack">回首頁</button></div>
   </section>`;
   $('#exStart').onclick=()=>{const v=$('#exName').value.trim();
@@ -723,7 +723,7 @@ function examFinish(){
 function examResult(){
   const x=state.exam;const wrong=x.res.map((r,i)=>({...r,i})).filter(r=>!r.ok);
   $('#app').innerHTML=`<section class="excert enter">
-    <div class="exban">模擬考成績單 · 請老師登記</div>
+    <div class="exban">模擬考成績單</div>
     <div class="who2">${esc(x.name)}</div>
     <div class="row" style="align-items:baseline;gap:8px"><span class="big">${x.score}</span><span style="font-size:22px">分 ／ 100</span></div>
     <div class="stats">
