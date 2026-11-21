@@ -189,6 +189,33 @@ h2{font-size:20px}
   .hq .qtext{font-size:15px}
   .hopt{padding:4px 8px}
 }
+/* ---------- 模擬考（粉色主題，方便老師一眼辨識） ---------- */
+body.exam{--bg:#fdeef4;--surface:#fff8fb;--ink:#2b1520;--muted:#7d5668;--line:#f1c4d5;--accent:#c2185b;--accent-ink:#ffffff;--accent-soft:#fbdbe8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) body.exam{--bg:#2a1520;--surface:#37202c;--ink:#fbe9f1;--muted:#d0a7b9;--line:#5c3549;--accent:#f48fb1;--accent-ink:#2a1520;--accent-soft:#4b2537}}
+:root[data-theme="dark"] body.exam{--bg:#2a1520;--surface:#37202c;--ink:#fbe9f1;--muted:#d0a7b9;--line:#5c3549;--accent:#f48fb1;--accent-ink:#2a1520;--accent-soft:#4b2537}
+:root{--pink:#c2185b;--pink-ink:#ffffff;--pink-soft:#fbdbe8;--pink-bg:#fdeef4;--pink-line:#f1c4d5}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pink:#f48fb1;--pink-ink:#2a1520;--pink-soft:#4b2537;--pink-bg:#37202c;--pink-line:#5c3549}}
+:root[data-theme="dark"]{--pink:#f48fb1;--pink-ink:#2a1520;--pink-soft:#4b2537;--pink-bg:#37202c;--pink-line:#5c3549}
+.exambtn{background:var(--pink-soft);border:1.5px solid var(--pink);color:var(--pink);border-radius:8px;padding:6px 12px;font-size:14px;font-weight:700}
+.panel.pink{background:var(--pink-bg);border-color:var(--pink-line)}
+.btn.pinkbtn{background:var(--pink);border-color:var(--pink);color:var(--pink-ink)}
+.exban{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-radius:8px;background:var(--accent);color:var(--accent-ink);font-weight:700}
+.exban .t{font-family:var(--f-num);font-variant-numeric:tabular-nums;margin-left:auto}
+.opt.pick{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt.pick .k{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.exgrid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+.exgrid button{padding:6px 0;border-radius:6px;border:1.5px solid var(--line);background:var(--surface);font-family:var(--f-num);font-size:13px;font-weight:700;color:var(--muted)}
+.exgrid button.done{background:var(--accent-soft);color:var(--ink);border-color:var(--accent)}
+.exgrid button.cur{outline:3px solid var(--accent);outline-offset:1px}
+.exgrid button.ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.exgrid button.ng{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.excert{border:2px solid var(--accent);border-radius:12px;padding:20px;display:grid;gap:12px;background:var(--surface)}
+.excert .who2{font-size:24px;font-weight:900}
+.excert .big{font-family:var(--f-num);font-size:84px;font-weight:700;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.exrec{font-size:14px;display:grid;gap:4px}
+.exrec div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--pink-line);padding-bottom:3px}
+.exrec span:last-child{font-family:var(--f-num);white-space:nowrap}
+@media (max-width:520px){.exgrid{grid-template-columns:repeat(5,minmax(0,1fr))}.excert .big{font-size:64px}}
 @media (max-width:520px){.who input{width:7em}.qtext{font-size:17px}.score .n{font-size:56px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -196,6 +223,7 @@ h2{font-size:20px}
 <header class="top"><div class="top-in">
   <button class="brand" id="homeBtn" title="回首頁">數概第三章複習站<small>計算機硬體 · 線上練習</small></button>
   <div class="spacer"></div>
+  <button class="exambtn" id="examBtn" title="50 題隨機模擬考，滿分 100 分">模擬考</button>
   <button class="histbtn" id="histBtn" title="歷年統測中與第三章硬體相關的原題與答案">歷年考題</button>
   <label class="who" for="stuName">姓名/座號 <input id="stuName" placeholder="例：12 王小明" maxlength="20"></label>
   <button class="iconbtn" id="muteBtn" aria-pressed="true" title="音效開關">音效</button>
@@ -333,12 +361,16 @@ $('#tally').onclick=()=>{
 };
 $('#dayClose').onclick=()=>{$('#dayModal').hidden=true;};
 $('#dayModal').addEventListener('click',e=>{if(e.target.id==='dayModal')$('#dayModal').hidden=true;});
-function guardLeave(go){if(state.quiz&&!state.quiz.done&&!state.confirmLeave){state.confirmLeave=true;renderQuiz();return;}go();}
+function guardLeave(go){
+  if(state.quiz&&!state.quiz.done&&!state.confirmLeave){state.confirmLeave=true;renderQuiz();return;}
+  if(state.exam&&state.exam.started&&!state.exam.done&&!state.exam.confirmLeave){state.exam.confirmLeave=true;examView();return;}
+  go();}
 $('#homeBtn').onclick=()=>guardLeave(home);
+$('#examBtn').onclick=()=>guardLeave(examIntro);
 $('#histBtn').onclick=()=>guardLeave(()=>{state.hist={year:'all',open:{},all:false};histView();window.scrollTo(0,0);});
 
 // ---------- state ----------
-const state={src:'all',quiz:null,showWrong:false,confirmClear:false,confirmLeave:false,hist:null};
+const state={exam:null,src:'all',quiz:null,showWrong:false,confirmClear:false,confirmLeave:false,hist:null};
 const ALL_LABEL='全部練習';
 // 線上版（嵌在 claude.ai 頁框內）無法開啟列印視窗，只有離線版顯示列印按鈕
 const CAN_PRINT=(()=>{try{return window.self===window.top;}catch(e){return false;}})();
@@ -349,7 +381,7 @@ const isSupp=s=>/^進階/.test(s.title)&&!/統測/.test(s.title);
 
 // ---------- home ----------
 function home(){
-  state.quiz=null;state.confirmLeave=false;state.hist=null;
+  state.quiz=null;state.confirmLeave=false;state.hist=null;examOff();
   const srcs=[...BANK.map(s=>({id:s.id,label:s.title,sub:(s.desc?s.desc+' · ':'')+s.qs.length+' 題'})),{id:'all',label:ALL_LABEL,sub:'以上全部單元，共 '+BANK.reduce((a,s)=>a+s.qs.length,0)+' 題'}];
   if(!srcs.some(s=>s.id===state.src))state.src='all';
   const wrong=getWrong();const wids=Object.keys(wrong).filter(id=>ALLQ[id]);
@@ -372,6 +404,14 @@ function home(){
     <div class="row"><button class="btn primary big" id="startBtn">開始練習</button>
     <span class="hint">題目與選項都會隨機排列；答錯會看到題解，並在稍後再出一次，全部答對才算完成。</span></div>
   </section>
+  <section class="panel pink">
+    <div class="sec-label">模擬考 · 50 題 · 滿分 100</div>
+    <div class="histcard">
+      <div class="meta"><b>從全部 ${BANK.reduce((a,s)=>a+s.qs.length,0)} 題隨機抽 50 題，每題 2 分</b><p>作答中不顯示對錯，可以跳題、改答案，交卷後才公布成績與詳解。成績單為粉紅色，方便老師登記。</p></div>
+      <button class="btn pinkbtn" id="examBtn2">開始模擬考</button>
+    </div>
+    ${examRecs().length?`<div class="exrec"><b>本機模擬考紀錄（最新 5 筆）</b>${examRecs().slice(-5).reverse().map(r=>`<div><span>${esc(r.d)} ${esc(r.t)}　${esc(r.name)}</span><span>${r.score} 分</span></div>`).join('')}</div>`:''}
+  </section>
   ${HIST.length?`<section class="panel">
     <div class="sec-label">歷年統測 · 第三章硬體考題</div>
     <div class="histcard">
@@ -392,6 +432,7 @@ function home(){
   </section>`;
   document.querySelectorAll('[data-src]').forEach(b=>b.onclick=()=>{state.src=b.dataset.src;home();});
   $('#startBtn').onclick=()=>startQuiz(poolFor(state.src).map(q=>q.id),state.src==='all'?ALL_LABEL:SRC[state.src].title,false);
+  const eb2=$('#examBtn2');if(eb2)eb2.onclick=examIntro;
   const hb2=$('#histBtn2');if(hb2)hb2.onclick=()=>$('#histBtn').click();
   const wb=$('#wrongBtn');if(wb)wb.onclick=()=>startQuiz(wids,'錯題複習',true);
   const tw=$('#toggleW');if(tw)tw.onclick=()=>{state.showWrong=!state.showWrong;home();};
@@ -403,7 +444,7 @@ function home(){
 
 // ---------- 歷年考題（原題順序、原選項順序，答案可逐題或全部揭曉）----------
 function histView(){
-  const h=state.hist;state.quiz=null;
+  const h=state.hist;state.quiz=null;examOff();
   const years=[...new Set(HIST.map(x=>x.y))];
   // 進階補充單元也列在這裡（題庫原本的選項順序）
   const SUPP=BANK.filter(isSupp);
@@ -545,6 +586,13 @@ function renderQuiz(){
 }
 document.addEventListener('keydown',e=>{
   if(!$('#dayModal').hidden){if(e.key==='Escape')$('#dayModal').hidden=true;return;}
+  const x=state.exam;
+  if(x&&x.started&&!x.done){
+    if(e.target.tagName==='INPUT'||e.repeat)return;const k=e.key.toUpperCase();let p='1234'.indexOf(k);if(p<0)p=L.indexOf(k);
+    if(p>=0&&k.length===1){e.preventDefault();examPick(p);}
+    else if(e.key==='ArrowRight'){e.preventDefault();examGo(x.cur+1);}
+    else if(e.key==='ArrowLeft'){e.preventDefault();examGo(x.cur-1);}
+    return;}
   const z=state.quiz;if(!z||z.done||e.target.tagName==='INPUT')return;
   if(e.repeat){e.preventDefault();return;} // 按住按鍵的自動連發一律忽略
   const k=e.key.toUpperCase();
@@ -599,6 +647,99 @@ function finish(){
   if(score>=60)sfx.win();
   if(score>=80){setTimeout(()=>rain(score>=100?260:150),300);}
   if(score>=100){const [x,y]=center(sn);setTimeout(()=>burst(x,y,120,13),900);}
+}
+
+// ---------- 模擬考：50 題、每題 2 分、交卷後才公布成績 ----------
+const EXAM_N=50;let examTimer=0;
+function examRecs(){return load('exams',[]);}
+function examOff(){document.body.classList.remove('exam');clearInterval(examTimer);state.exam=null;}
+function fmtDur(ms){const s=Math.max(0,Math.round(ms/1000));return Math.floor(s/60)+' 分 '+String(s%60).padStart(2,'0')+' 秒';}
+function nowStr(){const d=new Date();return {d:todayKey(),t:String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};}
+function examIntro(){
+  state.quiz=null;state.hist=null;clearInterval(examTimer);document.body.classList.add('exam');
+  const total=BANK.reduce((a,s)=>a+s.qs.length,0);const nm=$('#stuName').value.trim();
+  state.exam={started:false};
+  $('#app').innerHTML=`<section class="panel enter">
+    <div class="exban">模擬考 · ${EXAM_N} 題 · 滿分 100 分</div>
+    <h2>準備開始</h2>
+    <p style="margin:0">從全部 ${total} 題中隨機抽出 ${EXAM_N} 題，每題 2 分。作答時不會顯示對錯，可以用下方題號跳題、修改答案；全部作答完按「交卷」，才會公布成績與詳解。</p>
+    <div class="row"><label class="who" for="exName" style="color:var(--ink)">姓名／座號 <input id="exName" maxlength="20" placeholder="例：12 王小明" value="${esc(nm)}" style="width:12em"></label></div>
+    <p class="hint" id="exNameHint" style="margin:0">成績單會顯示姓名座號，方便老師登記，請務必填寫。</p>
+    <div class="row"><button class="btn primary big" id="exStart">開始作答</button><span class="spacer"></span><button class="linkbtn" id="exBack">回首頁</button></div>
+  </section>`;
+  $('#exStart').onclick=()=>{const v=$('#exName').value.trim();
+    if(!v){$('#exNameHint').textContent='請先填寫姓名／座號再開始。';$('#exNameHint').style.color='var(--bad)';$('#exName').focus();return;}
+    $('#stuName').value=v;save('name',v);examStart(v);};
+  $('#exBack').onclick=home;window.scrollTo(0,0);
+}
+function examStart(name){
+  const ids=shuffle(BANK.flatMap(s=>s.qs.map(q=>q.id))).slice(0,EXAM_N);
+  state.exam={started:true,done:false,name,ids,order:ids.map(()=>shuffle([0,1,2,3])),ans:ids.map(()=>null),cur:0,t0:Date.now(),away:0,confirmSubmit:false,confirmLeave:false};
+  examView();window.scrollTo(0,0);
+  examTimer=setInterval(()=>{const el=$('#exClock');if(el&&state.exam)el.textContent=fmtDur(Date.now()-state.exam.t0);},1000);
+}
+document.addEventListener('visibilitychange',()=>{const x=state.exam;if(x&&x.started&&!x.done&&document.hidden)x.away++;});
+function examPick(pos){const x=state.exam;x.ans[x.cur]=pos;x.confirmSubmit=false;examView();
+  const at=x.cur;if(at<EXAM_N-1)setTimeout(()=>{if(state.exam===x&&!x.done&&x.cur===at&&x.ans[at]===pos)examGo(at+1);},300);}
+function examGo(i){const x=state.exam;if(!x||i<0||i>=EXAM_N)return;x.cur=i;x.confirmSubmit=false;examView();}
+function examView(){
+  const x=state.exam;const q=ALLQ[x.ids[x.cur]];const ord=x.order[x.cur];const left=x.ans.filter(a=>a===null).length;
+  $('#app').innerHTML=`<section class="panel">
+    <div class="exban"><span>模擬考 · ${esc(x.name)}</span><span class="t">作答時間 <span id="exClock">${fmtDur(Date.now()-x.t0)}</span></span></div>
+    <div class="qhead"><span>第 <b>${x.cur+1}</b> / ${EXAM_N} 題（每題 2 分）</span><span>已作答 <b>${EXAM_N-left}</b> · 未作答 <b>${left}</b></span></div>
+    <div class="qtext">${esc(q.q)}</div>
+    <div class="opts">${ord.map((oi,pos)=>`<button class="opt ${x.ans[x.cur]===pos?'pick':''}" data-pos="${pos}"><span class="k">${L[pos]}</span><span>${esc(q.o[oi])}</span></button>`).join('')}</div>
+    <div class="row">
+      <button class="btn" id="exPrev" ${x.cur?'':'disabled'}>上一題</button>
+      <button class="btn" id="exNext" ${x.cur<EXAM_N-1?'':'disabled'}>下一題</button>
+      <span class="spacer"></span>
+      ${x.confirmSubmit?`<span class="hint" style="color:var(--bad)">${left?`還有 ${left} 題未作答（不給分），`:''}確定交卷？</span><button class="btn primary" id="exYes">確定交卷</button><button class="linkbtn" id="exNo">繼續作答</button>`
+        :`<button class="btn primary" id="exSubmit">交卷</button>`}
+    </div>
+    ${x.confirmLeave?`<div class="row"><span class="hint" style="color:var(--bad)">離開後這次模擬考不會留下成績，確定離開？</span><button class="linkbtn danger" id="exLeaveYes">確定離開</button><button class="linkbtn" id="exLeaveNo">繼續作答</button></div>`:''}
+    <div class="sec-label">題號（粉色＝已作答，點題號可跳題）</div>
+    <div class="exgrid">${x.ids.map((_,i)=>`<button data-i="${i}" class="${x.ans[i]!==null?'done':''} ${i===x.cur?'cur':''}">${i+1}</button>`).join('')}</div>
+    <div class="hint">鍵盤：1–4 或 A–D 作答（選完自動跳下一題），← → 換題</div>
+  </section>`;
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>examPick(+b.dataset.pos));
+  document.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>examGo(+b.dataset.i));
+  $('#exPrev').onclick=()=>examGo(x.cur-1);$('#exNext').onclick=()=>examGo(x.cur+1);
+  const sb=$('#exSubmit');if(sb)sb.onclick=()=>{x.confirmSubmit=true;examView();};
+  const y=$('#exYes');if(y)y.onclick=examFinish;
+  const n=$('#exNo');if(n)n.onclick=()=>{x.confirmSubmit=false;examView();};
+  const ly=$('#exLeaveYes');if(ly)ly.onclick=home;
+  const ln=$('#exLeaveNo');if(ln)ln.onclick=()=>{x.confirmLeave=false;examView();};
+}
+function examFinish(){
+  const x=state.exam;x.done=true;clearInterval(examTimer);
+  const res=x.ids.map((id,i)=>{const q=ALLQ[id];const a=x.ans[i];const pick=a===null?null:x.order[i][a];return {id,pick,ok:pick===q.a};});
+  const correct=res.filter(r=>r.ok).length;const score=correct*2;const dur=Date.now()-x.t0;const st=nowStr();
+  Object.assign(x,{res,score,correct,dur,when:st});
+  const recs=examRecs();recs.push({d:st.d,t:st.t,name:x.name,score,correct,dur:Math.round(dur/1000),away:x.away});save('exams',recs.slice(-100));
+  const w=getWrong();res.forEach(r=>{if(!r.ok)w[r.id]={times:((w[r.id]&&w[r.id].times)||0)+1,last:todayKey()};});setWrong(w);
+  const d=getDay();d.rounds.push({time:st.t,label:'模擬考（'+x.name+'）',score});setDay(d);
+  examResult();if(score>=60)sfx.win();if(score>=80)setTimeout(()=>rain(score>=100?260:150),300);
+}
+function examResult(){
+  const x=state.exam;const wrong=x.res.map((r,i)=>({...r,i})).filter(r=>!r.ok);
+  $('#app').innerHTML=`<section class="excert enter">
+    <div class="exban">模擬考成績單 · 請老師登記</div>
+    <div class="who2">${esc(x.name)}</div>
+    <div class="row" style="align-items:baseline;gap:8px"><span class="big">${x.score}</span><span style="font-size:22px">分 ／ 100</span></div>
+    <div class="stats">
+      <div class="stat"><div class="v">${x.correct} / ${EXAM_N}</div><div class="l">答對題數</div></div>
+      <div class="stat"><div class="v">${esc(x.when.d.slice(5).replace('-','/'))} ${esc(x.when.t)}</div><div class="l">交卷時間</div></div>
+      <div class="stat"><div class="v">${fmtDur(x.dur)}</div><div class="l">作答時間</div></div>
+      <div class="stat"><div class="v" style="color:${x.away?'var(--bad)':'inherit'}">${x.away}</div><div class="l">作答中切換視窗次數</div></div>
+    </div>
+    <div class="sec-label">各題結果（綠＝答對，紅＝答錯或未答，點紅色題號看詳解）</div>
+    <div class="exgrid">${x.res.map((r,i)=>`<button class="${r.ok?'ok':'ng'}" data-w="${i}" ${r.ok?'disabled':''}>${i+1}</button>`).join('')}</div>
+    <div class="row"><button class="btn primary" id="exAgain">再考一次</button><button class="btn" id="exHome">回首頁</button></div>
+    <p class="hint" style="margin:0">答錯和未作答的題目已加入個人錯題本。</p>
+  </section>
+  ${wrong.length?`<section class="panel"><div class="sec-label">答錯與未作答的題目（${wrong.length} 題）</div><div class="wlist" style="max-height:none">${wrong.map(r=>{const q=ALLQ[r.id];return `<div class="witem" id="w${r.i}"><div class="src">第 ${r.i+1} 題 · ${esc(SRC[q.src].title)}</div><div>${esc(q.q)}</div><div style="margin-top:4px">你的答案：${r.pick===null?'<b style="color:var(--bad)">未作答</b>':`<span style="color:var(--bad)">${esc(q.o[r.pick])}</span>`}</div><div><b style="color:var(--ok)">正確答案：${esc(q.o[q.a])}</b></div><div style="color:var(--muted);white-space:pre-line">${esc(q.e)}</div></div>`;}).join('')}</div></section>`:''}`;
+  document.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{const el=$('#w'+b.dataset.w);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});});
+  $('#exAgain').onclick=examIntro;$('#exHome').onclick=home;window.scrollTo(0,0);
 }
 
 renderMute();renderTally();home();
